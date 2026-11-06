@@ -1,0 +1,2 @@
+# Store and check out text files with LF line endings so Prettier's checks pass on every OS.
+* text=auto eol=lf
