@@ -21,3 +21,18 @@ export const roundRules: RoundRules = {
   playsPerRound: 2,
   maxRestsPerRound: 1,
 }
+
+export interface ScenarioRules {
+  /** The X in Unleash Doom's "Attack +X". */
+  readonly campaignTier: number
+  /** Cards in the Scenario 1 enemy deck. */
+  readonly enemyDeckSize: number
+  /** Damage from Toxic Fumes when you stand on Mud. Not reduced by shields. */
+  readonly toxicFumesDamage: number
+}
+
+export const scenarioRules: ScenarioRules = {
+  campaignTier: 1,
+  enemyDeckSize: 15,
+  toxicFumesDamage: 1,
+}

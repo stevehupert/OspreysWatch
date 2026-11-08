@@ -92,7 +92,7 @@ Played cards go to your discard pile, except burned cards (lost pile) and shield
 
 ## 6. Combat and damage
 
-**Damage you take:** (monster attack + enemy card modifier + any monster bonus) minus your shield, never below 0.
+**Damage you take:** (monster attack + enemy card modifier + any monster bonus) minus your shield, never below 0. Each attack is a separate hit: Frenzy's two attacks are each reduced by your shield.
 
 **Damage you deal:** your attack minus the target's armor, never below 0. **Assumption:** armor applies to every damage instance, including the extra damage from Cleave and Fireball.
 
@@ -111,7 +111,10 @@ Played cards go to your discard pile, except burned cards (lost pile) and shield
 
 ## 7. Enemy deck
 
-The deck is flipped one card per monster phase. **Assumption:** when the deck is empty, shuffle its discard pile to make a new deck. Unleash Doom also reshuffles the discard pile back in when drawn.
+The deck is flipped one card per monster phase, and the flipped card goes to the enemy discard pile.
+
+- When the draw pile is empty, shuffle the discard pile to make a new draw pile.
+- After Unleash Doom resolves, shuffle the discard pile (Unleash Doom included) together with whatever is left of the draw pile.
 
 | Card         | Qty | Who acts                 | Effect                                                                              |
 | ------------ | --- | ------------------------ | ----------------------------------------------------------------------------------- |
@@ -213,6 +216,7 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 15. **Monster pathing.** When several routes are equally short, which does a monster take? Does Mud cost monsters 2 movement as well? Do monsters avoid Lava? Undecided.
 16. **Blocked pushes.** Does armor reduce the 1 damage? Does Rubble count as a wall for a push? Undecided.
 17. **Reference games.** The games in section 12 must be re-played under the current shield and door rules. Undecided until done.
+18. **Movement on attack-only enemy cards.** Frenzy says only "Attack twice" and Unleash Doom only "Attack +X". Does the acting monster move toward you first, using the general rule in section 8 (Monster behavior), or attack only if it is already adjacent? Undecided.
 
 ## 12. Reference games
 
