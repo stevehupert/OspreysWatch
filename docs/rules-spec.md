@@ -84,7 +84,7 @@ Played cards go to your discard pile, except burned cards (lost pile) and shield
 ## 5. Resting, burning, exhaustion
 
 - A **rest** replaces one of your two plays. **Assumption:** at most one rest per round (resting in both slots is an open question).
-- To rest you need at least 2 cards in your discard pile. Choose one discard card and move it to the lost pile. Shuffle the rest of the discard into your draw pile, then draw up to 5.
+- To rest you need at least 2 cards in your discard pile. Choose one discard card and move it to the lost pile. Shuffle the rest of the discard together with whatever is left in your draw pile to form a new draw pile, then draw up to 5.
 - A rest may be taken in either slot. If your hand is empty at the start of a round, you must rest in the first slot.
 - **Lost cards** (burned or lost to a rest) stay out for the rest of the scenario and return when the scenario ends. This keeps the campaign resealable.
 - If you cannot play a card and cannot rest, you are **exhausted** and out of the scenario.
@@ -98,7 +98,7 @@ Played cards go to your discard pile, except burned cards (lost pile) and shield
 
 **Shields:**
 
-- A shield card is played face-up and stays showing until the next monster phase resolves, then goes to your discard pile. A shield played in the second slot therefore covers the next round's monster phase.
+- A shield card is played face-up and stays showing until the next monster phase resolves, then goes to your discard pile. If the shield half is also a Burn half (Last Stand A, Barrier A), the card goes to the lost pile instead. A shield played in the second slot therefore covers the next round's monster phase.
 - **Your shield = your base shield + the highest showing shield card.** Shield cards never add to each other. With no shield card showing, your shield is your base shield.
 - Examples: Hold the Line (Shield 2) gives the Warrior 1 + 2 = 3. The Mage with Ward (2) and Barrier (3) both showing has 1 + 3 = 4.
 
