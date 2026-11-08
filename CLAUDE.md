@@ -47,5 +47,6 @@ Run tests and lint before every commit. Do not commit with failing checks.
 - A rest can replace either play. It needs at least 2 cards in the discard pile, reshuffles and redraws up to 5,
   and loses one card for the scenario.
 - Burn halves send the card to the lost pile for the scenario.
-- Shields do not stack: the most recently played shield card applies. Damage taken is attack minus shield, never below zero.
+- Shield cards do not stack: your shield is your base shield plus the highest showing shield card.
+  Damage taken is attack minus shield, never below zero.
 - The party loses when every hero is out; heroes always gain XP but lose loot if the scenario is not completed.
