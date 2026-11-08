@@ -1,6 +1,6 @@
 # Rules Spec: Solo Tutorial Scenario (MVP)
 
-Status: draft v0.1, 2026-11-06. Source: the design workbook and the design conversations. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+Status: draft v0.2, 2026-11-07. Source: the design workbook and the design conversations. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
 
 ## 1. MVP scope
 
@@ -15,21 +15,21 @@ Not included: XP spending, the gold shop, evolution cards, other scenarios, mult
 
 ## 2. Action vocabulary
 
-| Term                         | Meaning                                                                                 |
-| ---------------------------- | --------------------------------------------------------------------------------------- |
-| Move N                       | Move up to N spaces. Mud costs 2 per space. Rubble and walls block movement.            |
-| Attack N, Range R            | Deal N damage to one enemy within R spaces. Melee attacks have range 1.                 |
-| Shield N                     | Place the card face-up as a showing shield worth N. See section 6.                      |
-| Heal N                       | Restore N health, up to maximum health (**Assumption**: healing cannot exceed maximum). |
-| Push N                       | Move an enemy N spaces directly away from you.                                          |
-| Freeze                       | The target cannot move during the next monster phase.                                   |
-| Pierce                       | Not used. Dropped from the design.                                                      |
-| Loot                         | Spend a play next to the treasure chest to take it. Worth 10 gold.                      |
-| Interact                     | Open a door or use a map feature next to you.                                           |
-| Return N cards               | Move N cards of your choice from your discard pile to your hand.                        |
-| Burn (marked on a card half) | Using that half sends the card to the lost pile for the scenario.                       |
+| Term                         | Meaning                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| Move N                       | Move up to N spaces. Mud costs 2 per space. Rubble and walls block movement.                      |
+| Attack N, Range R            | Deal N damage to one enemy within R spaces. Melee attacks have range 1.                           |
+| Shield N                     | Place the card face-up as a showing shield worth N. See section 6.                                |
+| Heal N                       | Restore N health, up to maximum health (**Assumption**: healing cannot exceed maximum).           |
+| Push N                       | Move an enemy N spaces directly away from you. See section 6 for blocked pushes.                  |
+| Freeze                       | The target cannot move during the next monster phase.                                             |
+| Pierce                       | Not used. Dropped from the design.                                                                |
+| Loot                         | Spend a play next to the treasure chest to take it. Worth 10 gold.                                |
+| Interact                     | Open a door or use a map feature next to you.                                                     |
+| Return N cards               | Move N cards of your choice from your discard pile to your hand. This may take your hand above 5. |
+| Burn (marked on a card half) | Using that half sends the card to the lost pile for the scenario.                                 |
 
-Every card can instead be played as Move 2, Attack 1 (melee), Loot, or Interact.
+Every card can instead be played as Move 2, Attack 1 (melee), Loot, or Interact. Playing a card this way never burns it, even if one of its halves is marked Burn; it goes to the discard pile.
 
 ## 3. Heroes
 
@@ -77,7 +77,7 @@ In the solo game, wording that targeted "a hero" or "all heroes" applies to you.
 1. **First play.** Play one card from your hand and use one half.
 2. **Monster phase.** Flip one card from the shared enemy deck and resolve it for every active monster.
 3. **Second play.** Play a second card, or rest.
-4. **End of round.** Resolve end-of-round effects (the boss's Aura), then draw up to 5 cards.
+4. **End of round.** Resolve end-of-round effects (the boss's Aura), then draw up to 5 cards. If your hand already holds 5 or more (for example after Arcane Recall), you draw nothing and keep the extra cards.
 
 Played cards go to your discard pile, except burned cards (lost pile) and shield cards (see section 6). A round in which no monsters are active has no monster phase. Monsters revealed during a round do not act until the next monster phase.
 
@@ -99,8 +99,10 @@ Played cards go to your discard pile, except burned cards (lost pile) and shield
 **Shields:**
 
 - A shield card is played face-up and stays showing until the next monster phase resolves, then goes to your discard pile. A shield played in the second slot therefore covers the next round's monster phase.
-- If several shields are showing, only the highest value applies. They never add together.
-- Your base shield counts as a showing shield, so it works as a floor, not an addition (confirmed). Hold the Line (Shield 2) gives the Warrior 2, not 3.
+- **Your shield = your base shield + the highest showing shield card.** Shield cards never add to each other. With no shield card showing, your shield is your base shield.
+- Examples: Hold the Line (Shield 2) gives the Warrior 1 + 2 = 3. The Mage with Ward (2) and Barrier (3) both showing has 1 + 3 = 4.
+
+**Blocked pushes:** if a pushed monster would move into a wall or another monster, it stops and takes 1 damage. **Assumption:** it stops in the last open space it reached.
 
 **Terrain:**
 
@@ -111,18 +113,18 @@ Played cards go to your discard pile, except burned cards (lost pile) and shield
 
 The deck is flipped one card per monster phase. **Assumption:** when the deck is empty, shuffle its discard pile to make a new deck. Unleash Doom also reshuffles the discard pile back in when drawn.
 
-| Card         | Qty | Who acts                 | Effect                                                    |
-| ------------ | --- | ------------------------ | --------------------------------------------------------- |
-| The Advance  | 4   | All monsters             | Move +1, Attack +0                                        |
-| The Skirmish | 4   | Monsters adjacent to you | Attack +1; other monsters do nothing                      |
-| Flanked!     | 1   | All monsters             | Move toward you, Attack +0                                |
-| Enrage       | 1   | Melee monsters           | Move +2, Attack +0                                        |
-| Frenzy       | 1   | The closest monster      | Attack twice                                              |
-| Toxic Fumes  | 1   | None                     | Monsters do not move. If you stand on Mud, take 1 damage. |
-| Unleash Doom | 2   | All monsters             | Attack +X, where X is the campaign tier (1 in Scenario 1) |
-| Regroup      | 1   | None                     | Monsters do not move or attack this round                 |
+| Card         | Qty | Who acts                 | Effect                                                                              |
+| ------------ | --- | ------------------------ | ----------------------------------------------------------------------------------- |
+| The Advance  | 4   | All monsters             | Move +1, Attack +0                                                                  |
+| The Skirmish | 4   | Monsters adjacent to you | Attack +1; other monsters do nothing                                                |
+| Flanked!     | 1   | All monsters             | Move toward you, Attack +0                                                          |
+| Enrage       | 1   | Melee monsters           | Move +2, Attack +0                                                                  |
+| Frenzy       | 1   | The closest monster      | Attack twice                                                                        |
+| Toxic Fumes  | 1   | None                     | Monsters do not move. If you stand on Mud, take 1 damage. Shields do not reduce it. |
+| Unleash Doom | 2   | All monsters             | Attack +X, where X is the campaign tier (1 in Scenario 1)                           |
+| Regroup      | 1   | None                     | Monsters do not move or attack this round                                           |
 
-Total 15 cards: the 18 drafted, minus three, plus Regroup as a quiet flip. Volley (no ranged monster), Collapse (no walls or pillars on the map), and Ambush (no spawn portal) were removed from the Scenario 1 deck because nothing on this map lets them do anything. They stay in the design for later scenarios.
+Total: exactly 15 cards. Regroup is included as a quiet flip. Volley (no ranged monster), Collapse (no walls or pillars on the map), and Ambush (no spawn portal) were removed from the Scenario 1 deck because nothing on this map lets them do anything. They stay in the design for later scenarios.
 
 ## 8. Monsters
 
@@ -133,13 +135,20 @@ Total 15 cards: the 18 drafted, minus three, plus Regroup as a quiet flip. Volle
 
 The boss's Environmental Rage (heals when a hero stands on hazard terrain) is not used in the MVP.
 
+### Monster behavior
+
+- All Scenario 1 monsters are melee (attack range 1).
+- Each acting monster targets the closest hero. If two heroes are equally close, it targets the one with the lowest current health. If still tied, it targets the hero who will act next. In the solo game the target is always you.
+- A monster that is already adjacent to its target does not move; it attacks.
+- Otherwise it moves toward its target, up to its Move plus any enemy card modifier, and then attacks if it is now adjacent. Monsters always move first, then attack.
+
 ## 9. Scenario 1: The Sunken Crypt
 
 **Map.** Two tiles joined by a door. Tile A is a 3x6 hallway with Mud spaces in the middle and two Rubble spaces. Tile B is a 6x6 ritual chamber with a 2x2 lava pit, a treasure chest beyond the pit, and the boss at the far right. Exact coordinates are to be fixed from the design workbook's diagram.
 
 **Setup.** You start at the left edge of Tile A. Two goblins start on the Mud, about 3 to 4 spaces away.
 
-**Door.** When you step on the door space, stop moving and reveal the boss on Tile B. The boss acts from the next monster phase.
+**Door.** Opening the door takes an Interact play while you are next to it. When it opens, reveal the boss on Tile B. The boss acts from the next monster phase.
 
 **Victory.** Defeat the boss.
 **Defeat.** You are out (0 health or exhausted).
@@ -163,18 +172,27 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 | warriorHealth / mageHealth         | 10 / 8  |
 | warriorBaseShield / mageBaseShield | 1 / 1   |
 | goblinCount                        | 2       |
-| goblinAttack                       | 2       |
+| goblinMove / goblinAttack          | 3 / 2   |
+| goblinArmor / goblinHealth         | 0 / 4   |
+| bossMove / bossAttack              | 2 / 4   |
 | bossHealth                         | 10      |
 | bossArmor                          | 1       |
 | auraRange                          | 2       |
 | campaignTier                       | 1       |
 | maxRestsPerRound                   | 1       |
+| enemyDeckSize                      | 15      |
+| mudMoveCost                        | 2       |
+| lavaDamage                         | 2       |
+| toxicFumesDamage                   | 1       |
+| blockedPushDamage                  | 1       |
+| chestGold                          | 10      |
+| victoryXp                          | 2       |
 
 ## 11. Open questions and tuning status
 
 1. **Goblin strength.** Resolved: goblin Attack is 2.
-2. **Mage durability.** 8 health and no base shield. Arcane Bolt and Force Push now have Shield 2 on half B, which, with Ward and Barrier, gives the Mage four shield-capable cards and cuts the chance of a 5-card hand with no shield option from about 22% to about 2%. The Mage's base shield is set to 1, but the owner would prefer her to be vulnerable and may want to return to 0 once the extra shield cards are tested.
-3. **Base shield as floor.** Resolved: confirmed.
+2. **Mage durability.** 8 health and a base shield of 1. Arcane Bolt and Force Push now have Shield 2 on half B, which, with Ward and Barrier, gives the Mage four shield-capable cards and cuts the chance of a 5-card hand with no shield option from about 22% to about 2%. The Mage's base shield is set to 1, but the owner would prefer her to be vulnerable and may want to return to 0 once the extra shield cards are tested.
+3. **Base shield.** Resolved (2026-11-07): your shield is base shield + the highest showing shield card. This replaces the earlier rule that the base shield was only a floor.
 4. **Rest in both slots.** Undecided. Default is one rest per round.
 5. **Enemy deck for Scenario 1.** Resolved: Volley, Collapse, and Ambush removed, Regroup was added as a quiet flip, giving 15 cards. A second Advance was considered and rejected. Flanked is nearly the same as Advance when solo.
 6. **Deck size.** Resolved: the Scenario 1 deck is 15 cards.
@@ -182,8 +200,23 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 8. **Map coordinates.** Tile layouts and start distances need to be fixed.
 9. **Aura and boss pursuit.** Kept as is. The boss moves 2 (3 with Advance) and chases you, so a solo Mage cannot simply stay out of Aura range. Her tools are Frost Snare (Freeze) and Force Push, which the reference game did not use. Untested.
 10. **Balance method.** Hand-scripted games are one line of play. Real win rates need the engine plus a simple bot playing thousands of seeded games.
+11. **Resolved (2026-11-07):**
+    - The door opens with an Interact play, not by stepping on it.
+    - Monster targeting, movement, and attack order are as in section 8 (Monster behavior), and all Scenario 1 monsters are melee.
+    - Toxic Fumes damage is not reduced by shields.
+    - Arcane Recall may take your hand above 5.
+    - Playing a card for its generic action never burns it.
+    - A push blocked by a wall or another monster deals 1 damage to the pushed monster.
+12. **Empty hand at the second play.** Section 5 covers an empty hand at the start of a round. What happens if your hand is empty when the second play comes? Undecided.
+13. **Freeze and attacks.** Freeze stops movement. Can a frozen monster still attack if it is adjacent? Undecided.
+14. **Frenzy tie-break.** Frenzy picks "the closest monster". If two monsters are equally close to you, which one acts? Undecided.
+15. **Monster pathing.** When several routes are equally short, which does a monster take? Does Mud cost monsters 2 movement as well? Do monsters avoid Lava? Undecided.
+16. **Blocked pushes.** Does armor reduce the 1 damage? Does Rubble count as a wall for a push? Undecided.
+17. **Reference games.** The games in section 12 must be re-played under the current shield and door rules. Undecided until done.
 
 ## 12. Reference games
+
+> **Outdated (2026-11-07).** These games were worked out under the earlier rules: the base shield was only a floor, and stepping on the door space opened it. Under the current rules every shielded hit is 1 lower, and each game needs an Interact play to open the door. Do not use them as acceptance tests until they are re-played (open question 17).
 
 Two scripted solo games using the values in this spec (goblin Attack 2, Mage base shield 1, the current Mage deck). Play was chosen by hand and the enemy flips were fixed in advance, so each game is one line of play, not a sample. The Regroup card was not flipped. Use them as acceptance tests: with the same seed and plays, the engine should reproduce every number.
 
