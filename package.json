@@ -10,6 +10,7 @@
     "lint": "oxlint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "simulate": "node scripts/simulate.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
