@@ -115,9 +115,29 @@ h2 {
   align-items: start;
 }
 
+/* On narrow screens the map and the monster list stack. The monster list moves below the hand,
+   so the question being asked (the controls) sits right under the map you click on. */
 @media (max-width: 1000px) {
   .table {
-    grid-template-columns: minmax(0, 1fr);
+    display: contents;
+  }
+  .status {
+    order: 1;
+  }
+  .board {
+    order: 2;
+  }
+  .controls {
+    order: 3;
+  }
+  .game > [aria-label='Hand'] {
+    order: 4;
+  }
+  .monsters {
+    order: 5;
+  }
+  .piles {
+    order: 6;
   }
 }
 
@@ -267,4 +287,112 @@ h2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
+}
+
+/* Playing: highlighted spaces and monsters, clickable cards, the controls panel */
+
+:root {
+  --accent: #2f6fd1;
+  --warn: #9a5b00;
+  --win: #2e7d32;
+  --lose: #c0392b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #6aa0f0;
+    --warn: #e0a84a;
+    --win: #7cc47f;
+    --lose: #ec7b6e;
+  }
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button.cell {
+  border: 0;
+  cursor: pointer;
+}
+
+.cell.selectable {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+
+.cell.selectable:hover,
+.cell.selectable:focus-visible {
+  outline-width: 5px;
+  outline-offset: -5px;
+}
+
+button.card {
+  text-align: left;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+button.card:hover,
+button.card:focus-visible {
+  border-color: var(--accent);
+}
+
+.card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.controls .prompt {
+  margin: 0 0 8px;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.options button {
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.options button:hover,
+.options button:focus-visible {
+  background: var(--accent);
+  color: #fff;
+}
+
+.options button.cancel {
+  border-color: var(--border);
+}
+
+.warnings {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  color: var(--warn);
+}
+
+.result {
+  margin: 0;
+  font-weight: 700;
+}
+
+.result-victory {
+  color: var(--win);
+}
+
+.result-defeat-health,
+.result-defeat-exhausted {
+  color: var(--lose);
+}
+
+.cell.chosen {
+  outline: 3px dashed var(--hero);
+  outline-offset: -3px;
 }

@@ -8,6 +8,14 @@ import { heroNames } from './names.ts'
 interface BoardProps {
   readonly context: GameContext
   readonly state: GameState
+  /** Spaces the player may click right now (a Move destination). */
+  readonly selectableSpaces?: readonly Pos[]
+  /** Monsters the player may click right now (a target), by id. */
+  readonly selectableMonsters?: readonly string[]
+  /** The space already chosen for the play being built (for example where Charge will move). */
+  readonly chosenSpace?: Pos
+  readonly onSpaceClick?: (pos: Pos) => void
+  readonly onMonsterClick?: (id: string) => void
 }
 
 const terrainNames: Record<Terrain, string> = {
@@ -19,7 +27,8 @@ const terrainNames: Record<Terrain, string> = {
   door: 'Door',
 }
 
-export function Board({ context, state }: BoardProps) {
+export function Board(props: BoardProps) {
+  const { context } = props
   const rows = context.scenario.spaces.map((space) => space.at.row)
   const cols = context.scenario.spaces.map((space) => space.at.col)
   const firstRow = Math.min(...rows)
@@ -29,7 +38,7 @@ export function Board({ context, state }: BoardProps) {
   const cells = []
   for (let row = firstRow; row <= Math.max(...rows); row++) {
     for (let col = firstCol; col < firstCol + width; col++) {
-      cells.push(<Cell key={`${row}-${col}`} context={context} state={state} pos={{ row, col }} />)
+      cells.push(<Cell key={`${row}-${col}`} {...props} pos={{ row, col }} />)
     }
   }
 
@@ -44,7 +53,8 @@ export function Board({ context, state }: BoardProps) {
   )
 }
 
-function Cell({ context, state, pos }: BoardProps & { readonly pos: Pos }) {
+function Cell(props: BoardProps & { readonly pos: Pos }) {
+  const { context, state, pos } = props
   const terrain = terrainAt(context.board, pos)
   if (!terrain) return <div className="cell off-map" />
 
@@ -53,8 +63,8 @@ function Cell({ context, state, pos }: BoardProps & { readonly pos: Pos }) {
   const hero = samePos(state.position, pos)
   const label = terrainLabel(terrain, state)
 
-  return (
-    <div className={`cell terrain-${terrain}`} title={label || undefined}>
+  const contents = (
+    <>
       {label && <span className="terrain-label">{label}</span>}
       {hero && (
         <span className={`token hero hero-${state.heroId}`} title={heroNames[state.heroId]}>
@@ -62,6 +72,42 @@ function Cell({ context, state, pos }: BoardProps & { readonly pos: Pos }) {
         </span>
       )}
       {monster && <MonsterToken monster={monster} />}
+    </>
+  )
+
+  const chosen = props.chosenSpace !== undefined && samePos(props.chosenSpace, pos)
+  const className = `cell terrain-${terrain}${chosen ? ' chosen' : ''}`
+  if (monster && props.selectableMonsters?.includes(monster.id)) {
+    return (
+      <button
+        type="button"
+        className={`${className} selectable`}
+        aria-label={`Target ${monster.id}`}
+        onClick={() => props.onMonsterClick?.(monster.id)}
+      >
+        {contents}
+      </button>
+    )
+  }
+  if (props.selectableSpaces?.some((p) => samePos(p, pos))) {
+    return (
+      <button
+        type="button"
+        className={`${className} selectable`}
+        aria-label={`Move to row ${pos.row}, column ${pos.col}`}
+        onClick={() => props.onSpaceClick?.(pos)}
+      >
+        {contents}
+      </button>
+    )
+  }
+  return (
+    <div
+      className={className}
+      title={chosen ? 'You move here' : label || undefined}
+      aria-label={chosen ? 'You move here' : undefined}
+    >
+      {contents}
     </div>
   )
 }

@@ -1,5 +1,8 @@
-// The whole game screen: status, map, monsters, hand and piles. Read-only for now.
+// The whole game screen: status, map, monsters, controls, hand and piles.
+// It keeps the play the player is building (which card, which half, ...) and hands finished
+// actions to `onAction`. Without `onAction` the screen is read-only.
 
+import { useMemo, useState } from 'react'
 import { monsterStats } from '../engine/data/monsters.ts'
 import {
   currentShield,
@@ -8,25 +11,112 @@ import {
   type GameContext,
   type GameState,
 } from '../engine/gameState.ts'
+import type { Pos } from '../engine/grid.ts'
+import type { HeroAction } from '../engine/heroActions.ts'
+import { legalActions } from '../engine/legalActions.ts'
 import { Board } from './Board.tsx'
+import { Controls } from './Controls.tsx'
 import { Hand } from './Hand.tsx'
 import { cardById, heroNames } from './names.ts'
+import {
+  isMapField,
+  matchingPlays,
+  nextField,
+  options,
+  playableCards,
+  type Pending,
+  type Pick,
+} from './selection.ts'
+import { warningsFor } from './warnings.ts'
 
 interface GameScreenProps {
   readonly context: GameContext
   readonly state: GameState
+  readonly onAction?: (action: HeroAction) => void
 }
 
-export function GameScreen({ context, state }: GameScreenProps) {
+export function GameScreen({ context, state, onAction }: GameScreenProps) {
+  const [pending, setPending] = useState<Pending | null>(null)
+  const actions = useMemo(
+    () => (onAction ? legalActions(context, state) : []),
+    [context, state, onAction],
+  )
+
+  const act = (action: HeroAction) => {
+    setPending(null)
+    onAction?.(action)
+  }
+
+  const clickCard = (card: string) => {
+    if (state.phase === 'roar') return act({ type: 'discard', card })
+    const same = pending?.kind === 'play' && pending.card === card
+    setPending(same ? null : { kind: 'play', card, picks: [] })
+  }
+
+  // Add a choice. If that leaves one play and it wastes nothing, play it straight away.
+  const pick = (choice: Pick) => {
+    if (pending?.kind !== 'play') return
+    const picks = [...pending.picks, choice]
+    const plays = matchingPlays(actions, pending.card, picks)
+    if (plays.length === 1 && warningsFor(context, state, plays[0]).length === 0) {
+      return act(plays[0])
+    }
+    setPending({ ...pending, picks })
+  }
+
+  // What the map offers right now: destinations for a Move, monsters for a target.
+  const plays = pending?.kind === 'play' ? matchingPlays(actions, pending.card, pending.picks) : []
+  const field = plays.length > 0 ? nextField(plays) : null
+  const mapValues =
+    field && isMapField(field) ? options(plays, field).filter((v) => v !== undefined) : []
+
   return (
     <main className="game">
       <h1>{context.scenario.name}</h1>
       <StatusBar context={context} state={state} />
       <div className="table">
-        <Board context={context} state={state} />
+        <Board
+          context={context}
+          state={state}
+          selectableSpaces={field === 'to' ? (mapValues as Pos[]) : undefined}
+          selectableMonsters={
+            field === 'target' || field === 'second' ? (mapValues as string[]) : undefined
+          }
+          chosenSpace={
+            pending?.kind === 'play'
+              ? (pending.picks.find((p) => p.field === 'to')?.value as Pos | undefined)
+              : undefined
+          }
+          onSpaceClick={(to) => pick({ field: 'to', value: to })}
+          onMonsterClick={(id) => field && pick({ field, value: id })}
+        />
         <Monsters state={state} />
       </div>
-      <Hand context={context} state={state} />
+      {onAction && (
+        <Controls
+          context={context}
+          state={state}
+          actions={actions}
+          pending={pending}
+          onPick={pick}
+          onStartRest={() => setPending({ kind: 'rest' })}
+          onAction={act}
+          onCancel={() => setPending(null)}
+        />
+      )}
+      <Hand
+        context={context}
+        state={state}
+        clickable={
+          !onAction || state.result
+            ? undefined
+            : state.phase === 'roar'
+              ? new Set(state.deck.hand)
+              : playableCards(actions)
+        }
+        selected={pending?.kind === 'play' ? pending.card : undefined}
+        onCardClick={clickCard}
+      />
       <Piles context={context} state={state} />
     </main>
   )
