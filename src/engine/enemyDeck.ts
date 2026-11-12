@@ -5,7 +5,7 @@
 
 import { scenarioRules as defaultScenarioRules, type ScenarioRules } from './data/config.ts'
 import type { EnemyCardDefinition } from './data/enemyDeck.ts'
-import { shuffle, type RandomState } from './random.ts'
+import { shuffle, type RandomState, type Shuffler } from './random.ts'
 
 export interface EnemyDeck {
   /** Index 0 is the top of the pile. */
@@ -17,9 +17,10 @@ export interface EnemyDeck {
 export function createEnemyDeck(
   cards: readonly EnemyCardDefinition[],
   random: RandomState,
+  shuffler: Shuffler = shuffle,
 ): { deck: EnemyDeck; random: RandomState } {
   const ids = cards.flatMap((card) => Array.from({ length: card.count }, () => card.id))
-  const shuffled = shuffle(ids, random)
+  const shuffled = shuffler(ids, random)
   return { deck: { drawPile: shuffled.items, discard: [] }, random: shuffled.state }
 }
 
@@ -31,6 +32,7 @@ export function flipEnemyCard(
   deck: EnemyDeck,
   cards: readonly EnemyCardDefinition[],
   random: RandomState,
+  shuffler: Shuffler = shuffle,
 ): { card: EnemyCardDefinition; deck: EnemyDeck; random: RandomState } {
   let drawPile = deck.drawPile
   let discard = deck.discard
@@ -39,7 +41,7 @@ export function flipEnemyCard(
     if (discard.length === 0) {
       throw new Error('Cannot flip: the enemy deck and its discard pile are both empty')
     }
-    const shuffled = shuffle(discard, state)
+    const shuffled = shuffler(discard, state)
     drawPile = shuffled.items
     discard = []
     state = shuffled.state
@@ -60,11 +62,12 @@ export function afterEnemyCardResolves(
   deck: EnemyDeck,
   card: EnemyCardDefinition,
   random: RandomState,
+  shuffler: Shuffler = shuffle,
 ): { deck: EnemyDeck; random: RandomState } {
   if (!card.reshuffle) {
     return { deck, random }
   }
-  const shuffled = shuffle([...deck.drawPile, ...deck.discard], random)
+  const shuffled = shuffler([...deck.drawPile, ...deck.discard], random)
   return { deck: { drawPile: shuffled.items, discard: [] }, random: shuffled.state }
 }
 

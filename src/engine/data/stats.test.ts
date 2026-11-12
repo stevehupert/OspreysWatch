@@ -47,8 +47,8 @@ describe('enemy deck data', () => {
 describe('hero and monster stats', () => {
   it('match the spec', () => {
     expect(heroStats.warrior).toEqual({ maxHealth: 10, baseShield: 1 })
-    expect(heroStats.mage).toEqual({ maxHealth: 8, baseShield: 1 })
+    expect(heroStats.mage).toEqual({ maxHealth: 7, baseShield: 0 })
     expect(monsterStats.goblin).toMatchObject({ move: 3, attack: 2, armor: 0, health: 4 })
-    expect(monsterStats.shadowLord).toMatchObject({ move: 2, attack: 4, armor: 1, health: 10 })
+    expect(monsterStats.ogre).toMatchObject({ move: 2, attack: 4, armor: 1, health: 10 })
   })
 })

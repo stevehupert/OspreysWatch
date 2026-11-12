@@ -50,3 +50,12 @@ export function shuffle<T>(
   }
   return { items: result, state: current }
 }
+
+/**
+ * Anything that shuffles like `shuffle` does. Game code takes one as an optional parameter so a test can
+ * script exactly how a deck comes out (reference games) instead of depending on the random generator.
+ */
+export type Shuffler = <T>(
+  items: readonly T[],
+  state: RandomState,
+) => { items: T[]; state: RandomState }

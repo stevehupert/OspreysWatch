@@ -2,10 +2,12 @@
 
 import type { ShowingShield } from './deck.ts'
 
-/** Your shield: base shield + the highest showing shield card. Shield cards never add to each other. */
+/**
+ * Your shield. The base shield counts as a showing shield, so it is a floor: you get the higher of the base
+ * shield and the best showing shield card. Shield cards never add to each other, and never add to the base.
+ */
 export function heroShield(baseShield: number, showing: readonly ShowingShield[]): number {
-  const highestCard = showing.reduce((highest, shield) => Math.max(highest, shield.value), 0)
-  return baseShield + highestCard
+  return showing.reduce((highest, shield) => Math.max(highest, shield.value), baseShield)
 }
 
 export interface MonsterHit {
