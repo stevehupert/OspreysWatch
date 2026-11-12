@@ -27,7 +27,8 @@ This is a learning project: the owner reviews every change, so keep changes smal
 - `npm run lint` runs oxlint.
 - `npm run format` formats all files with Prettier; `npm run format:check` only checks.
 - `npm run build` type-checks and makes the production build.
-- `npx playwright test` runs the browser tests (Playwright is not installed yet).
+- `npm run test:e2e` runs the Playwright browser tests in `e2e/` (desktop and phone sizes; it starts its own
+  dev server). First-time setup on a machine: `npx playwright install chromium`.
 - `npm run simulate -- <warrior|mage> [firstSeed] [lastSeed] [step|interact] [workers]` plays the bot
   and prints win rates (needs Node 22.18 or newer).
 
