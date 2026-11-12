@@ -2,6 +2,8 @@
 // ends every round in exactly the same state. Shuffles are scripted so no random generator is involved.
 
 import { describe, expect, it } from 'vitest'
+import { mageDeck } from './data/mageDeck.ts'
+import { warriorDeck } from './data/warriorDeck.ts'
 import { mageReference } from './fixtures/mageReference.ts'
 import type { RefAction, RefSnapshot, ReferenceGame } from './fixtures/referenceGameTypes.ts'
 import { warriorReference } from './fixtures/warriorReference.ts'
@@ -63,9 +65,17 @@ function snapshot(game: ReferenceGame, state: GameState): RefSnapshot {
   }
 }
 
+/** The hero's current deck, with any card that has changed since recording put back as it was. */
+function cardsAsRecorded(game: ReferenceGame) {
+  const old = new Map((game.cardsAsRecorded ?? []).map((card) => [card.id, card]))
+  const deck = game.hero === 'warrior' ? warriorDeck : mageDeck
+  return { [game.hero]: deck.map((card) => old.get(card.id) ?? card) }
+}
+
 function replay(game: ReferenceGame, doorOpensBy: 'step' | 'interact' = 'step') {
   const context = createContext({
     rules: { doorOpensBy },
+    heroCards: cardsAsRecorded(game),
     shuffleHero: scripted(
       'hero',
       [game.deal, ...game.heroShuffles].map((order) => order.map((n) => `${game.hero}-${slug(n)}`)),

@@ -2,12 +2,29 @@
 // It lists every play a perfect-foresight search made, the shuffles that happened (scripted, so the
 // replay does not depend on any random generator), and the game state after each round.
 // Cards and enemy cards are named as printed. Do not edit by hand: regenerate from the simulator.
+// (cardsAsRecorded was added by hand when Charge changed; the recorded plays are untouched.)
 
 import type { ReferenceGame } from './referenceGameTypes.ts'
 
 export const warriorReference: ReferenceGame = {
   name: 'warrior-seed-1',
   hero: 'warrior',
+  // Recorded before Charge became "Move 3, then Attack 2" with no Burn (rules-spec v0.9).
+  cardsAsRecorded: [
+    {
+      id: 'warrior-charge',
+      name: 'Charge',
+      halfA: {
+        text: 'Move 3, then Attack 3',
+        burn: true,
+        effects: [
+          { kind: 'move', distance: 3 },
+          { kind: 'attack', damage: 3, range: 1 },
+        ],
+      },
+      halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
+    },
+  ],
   deal: [
     'Second Wind',
     'Heavy Blow',

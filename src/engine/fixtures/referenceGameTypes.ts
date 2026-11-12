@@ -1,5 +1,6 @@
 // The shape of a recorded reference game (see warriorReference.ts and mageReference.ts).
 
+import type { CardDefinition } from '../data/cardTypes.ts'
 import type { HeroId } from '../data/heroes.ts'
 import type { GameResult } from '../gameState.ts'
 
@@ -42,6 +43,11 @@ export interface RefSnapshot {
 export interface ReferenceGame {
   readonly name: string
   readonly hero: HeroId
+  /**
+   * Cards whose definition has changed since the game was recorded. The replay uses these
+   * instead of the current cards with the same id, so the game still plays out as recorded.
+   */
+  readonly cardsAsRecorded?: readonly CardDefinition[]
   /** Starting deck order: the first five are the opening hand. */
   readonly deal: readonly string[]
   /** Enemy deck order at the start, top first. */
