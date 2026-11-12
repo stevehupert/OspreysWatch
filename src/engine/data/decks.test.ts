@@ -47,12 +47,10 @@ describe('Warrior deck data', () => {
 })
 
 describe('Mage deck data', () => {
-  it('marks the three burn cards from the spec', () => {
-    expect(names(mageDeck, (card) => card.halfA.burn)).toEqual([
-      'Meteor',
-      'Arcane Recall',
-      'Barrier',
-    ])
+  it('marks the four burn cards from the spec (Arcane Bolt burns as of v0.7)', () => {
+    expect(names(mageDeck, (card) => card.halfA.burn).sort()).toEqual(
+      ['Arcane Bolt', 'Arcane Recall', 'Barrier', 'Meteor'].sort(),
+    )
   })
 
   it('has four shield-capable cards, as in spec open question 2', () => {
@@ -67,5 +65,20 @@ describe('Mage deck data', () => {
       ['Ward', 2],
       ['Barrier', 3],
     ])
+  })
+})
+
+describe('card effects', () => {
+  it('give every shield half a shield effect of the same value, and only shield halves', () => {
+    for (const card of [...warriorDeck, ...mageDeck]) {
+      for (const half of [card.halfA, card.halfB]) {
+        const shieldEffects = half.effects.filter((e) => e.kind === 'shield')
+        if (half.shield === undefined) {
+          expect(shieldEffects, `${card.name}`).toEqual([])
+        } else {
+          expect(shieldEffects, `${card.name}`).toEqual([{ kind: 'shield', value: half.shield }])
+        }
+      }
+    }
   })
 })

@@ -28,6 +28,8 @@ This is a learning project: the owner reviews every change, so keep changes smal
 - `npm run format` formats all files with Prettier; `npm run format:check` only checks.
 - `npm run build` type-checks and makes the production build.
 - `npx playwright test` runs the browser tests (Playwright is not installed yet).
+- `npm run simulate -- <warrior|mage> [firstSeed] [lastSeed] [step|interact] [workers]` plays the bot
+  and prints win rates (needs Node 22.18 or newer).
 
 Run tests and lint before every commit. Do not commit with failing checks.
 
@@ -47,6 +49,6 @@ Run tests and lint before every commit. Do not commit with failing checks.
 - A rest can replace either play. It needs at least 2 cards in the discard pile, reshuffles and redraws up to 5,
   and loses one card for the scenario.
 - Burn halves send the card to the lost pile for the scenario.
-- Shield cards do not stack: your shield is your base shield plus the highest showing shield card.
-  Damage taken is attack minus shield, never below zero.
+- Shield cards do not stack, and your base shield is a floor: your shield is the higher of your base shield
+  and the highest showing shield card. Damage taken is attack minus shield, never below zero.
 - The party loses when every hero is out; heroes always gain XP but lose loot if the scenario is not completed.

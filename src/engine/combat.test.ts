@@ -17,13 +17,18 @@ describe('heroShield', () => {
     expect(heroShield(heroStats.warrior.baseShield, [])).toBe(1)
   })
 
-  it('adds the base shield to a showing shield card (Hold the Line gives the Warrior 3)', () => {
-    expect(heroShield(heroStats.warrior.baseShield, [shield(2)])).toBe(3)
+  it('uses a showing shield card when it beats the base shield (Hold the Line gives the Warrior 2)', () => {
+    expect(heroShield(heroStats.warrior.baseShield, [shield(2)])).toBe(2)
   })
 
-  it('uses only the highest showing card; cards never add together (Ward + Barrier gives the Mage 4)', () => {
-    expect(heroShield(heroStats.mage.baseShield, [shield(2), shield(3)])).toBe(4)
-    expect(heroShield(heroStats.mage.baseShield, [shield(3), shield(2)])).toBe(4)
+  it('never adds a card to the base shield: the base is a floor', () => {
+    expect(heroShield(heroStats.warrior.baseShield, [shield(1)])).toBe(1)
+    expect(heroShield(3, [shield(2)])).toBe(3)
+  })
+
+  it('uses only the highest showing card; cards never add together (Ward + Barrier gives the Mage 3)', () => {
+    expect(heroShield(heroStats.mage.baseShield, [shield(2), shield(3)])).toBe(3)
+    expect(heroShield(heroStats.mage.baseShield, [shield(3), shield(2)])).toBe(3)
   })
 })
 
@@ -44,7 +49,7 @@ describe('damageToHero', () => {
   })
 
   it('reduces each of two Frenzy hits separately', () => {
-    const perHit = damageToHero({ attack: monsterStats.shadowLord.attack }, 2)
+    const perHit = damageToHero({ attack: monsterStats.ogre.attack }, 2)
     expect(perHit).toBe(2)
     expect(applyDamage(applyDamage(10, perHit), perHit)).toBe(6)
   })
@@ -52,7 +57,7 @@ describe('damageToHero', () => {
 
 describe('damageToMonster', () => {
   it('is attack minus armor, never below 0', () => {
-    expect(damageToMonster(5, monsterStats.shadowLord.armor)).toBe(4)
+    expect(damageToMonster(5, monsterStats.ogre.armor)).toBe(4)
     expect(damageToMonster(3, monsterStats.goblin.armor)).toBe(3)
     expect(damageToMonster(1, 2)).toBe(0)
   })

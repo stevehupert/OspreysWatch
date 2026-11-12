@@ -5,7 +5,7 @@
 
 import type { CardDefinition } from './data/cardTypes.ts'
 import { deckRules as defaultDeckRules, type DeckRules } from './data/config.ts'
-import { shuffle, type RandomState } from './random.ts'
+import { shuffle, type RandomState, type Shuffler } from './random.ts'
 
 /** A shield card that is face-up until the next monster phase resolves. */
 export interface ShowingShield {
@@ -32,12 +32,13 @@ export function createDeck(
   cards: readonly CardDefinition[],
   random: RandomState,
   rules: DeckRules = defaultDeckRules,
+  shuffler: Shuffler = shuffle,
 ): { deck: HeroDeck; random: RandomState } {
   const ids = cards.map((card) => card.id)
   if (new Set(ids).size !== ids.length) {
     throw new Error('A deck cannot contain the same card id twice')
   }
-  const shuffled = shuffle(ids, random)
+  const shuffled = shuffler(ids, random)
   const empty: HeroDeck = { drawPile: shuffled.items, hand: [], discard: [], showing: [], lost: [] }
   return { deck: drawUpTo(empty, rules), random: shuffled.state }
 }
@@ -101,6 +102,7 @@ export function rest(
   cardIdToLose: string,
   random: RandomState,
   rules: DeckRules = defaultDeckRules,
+  shuffler: Shuffler = shuffle,
 ): { deck: HeroDeck; random: RandomState } {
   if (!canRest(deck, rules)) {
     throw new Error(
@@ -108,7 +110,7 @@ export function rest(
     )
   }
   const remainingDiscard = removeOne(deck.discard, cardIdToLose, 'discard pile')
-  const shuffled = shuffle([...deck.drawPile, ...remainingDiscard], random)
+  const shuffled = shuffler([...deck.drawPile, ...remainingDiscard], random)
   const rested: HeroDeck = {
     ...deck,
     drawPile: shuffled.items,

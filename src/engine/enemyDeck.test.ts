@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { scenarioRules } from './data/config.ts'
 import { enemyDeck } from './data/enemyDeck.ts'
 import {
   afterEnemyCardResolves,
@@ -114,12 +115,6 @@ describe('enemyAttackBonus', () => {
     expect(enemyAttackBonus(card('skirmish'))).toBe(1)
     expect(enemyAttackBonus(card('advance'))).toBe(0)
     expect(enemyAttackBonus(card('unleash-doom'))).toBe(1)
-    expect(
-      enemyAttackBonus(card('unleash-doom'), {
-        campaignTier: 3,
-        enemyDeckSize: 15,
-        toxicFumesDamage: 1,
-      }),
-    ).toBe(3)
+    expect(enemyAttackBonus(card('unleash-doom'), { ...scenarioRules, campaignTier: 3 })).toBe(3)
   })
 })

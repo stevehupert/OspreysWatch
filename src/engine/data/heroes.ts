@@ -7,5 +7,7 @@ export interface HeroStats {
 
 export const heroStats = {
   warrior: { maxHealth: 10, baseShield: 1 },
-  mage: { maxHealth: 8, baseShield: 1 },
+  mage: { maxHealth: 7, baseShield: 0 },
 } as const satisfies Record<string, HeroStats>
+
+export type HeroId = keyof typeof heroStats

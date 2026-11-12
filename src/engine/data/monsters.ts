@@ -19,13 +19,15 @@ export const monsterStats = {
     health: 4,
     special: 'Pack Tactics: +1 attack if another goblin is adjacent to the target. Does not stack.',
   },
-  shadowLord: {
-    name: 'Shadow Lord',
+  ogre: {
+    name: 'Ogre',
     move: 2,
     attack: 4,
     armor: 1,
     health: 10,
     special:
-      'Rotting Aura: at end of each round, if you are within 2 spaces, discard 1 card of your choice from your hand.',
+      'Frightening Roar: at the end of each round, if you are within 2 spaces, discard 1 card of your choice from your hand.',
   },
 } as const satisfies Record<string, MonsterStats>
+
+export type MonsterKind = keyof typeof monsterStats

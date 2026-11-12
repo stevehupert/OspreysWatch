@@ -15,6 +15,8 @@ export interface EnemyCardDefinition {
   readonly count: number
   readonly text: string
   readonly actors: EnemyActors
+  /** Acting monsters move toward you before attacking. False for cards that are attack-only. */
+  readonly moves: boolean
   /** Added to each acting monster's Move. */
   readonly moveBonus: number
   /** Added to each acting monster's attack. 'campaignTier' means "+X, where X is the campaign tier". */
@@ -34,6 +36,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 4,
     text: 'All monsters: Move +1, Attack +0',
     actors: 'all',
+    moves: true,
     moveBonus: 1,
     attackBonus: 0,
     attacks: 1,
@@ -44,6 +47,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 4,
     text: 'Monsters adjacent to you: Attack +1. Other monsters do nothing.',
     actors: 'adjacent',
+    moves: false,
     moveBonus: 0,
     attackBonus: 1,
     attacks: 1,
@@ -54,6 +58,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 1,
     text: 'All monsters: Move toward you, Attack +0',
     actors: 'all',
+    moves: true,
     moveBonus: 0,
     attackBonus: 0,
     attacks: 1,
@@ -64,6 +69,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 1,
     text: 'Melee monsters: Move +2, Attack +0',
     actors: 'melee',
+    moves: true,
     moveBonus: 2,
     attackBonus: 0,
     attacks: 1,
@@ -74,6 +80,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 1,
     text: 'The closest monster: Attack twice',
     actors: 'closest',
+    moves: false,
     moveBonus: 0,
     attackBonus: 0,
     attacks: 2,
@@ -84,6 +91,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 1,
     text: 'Monsters do not move. If you stand on Mud, take 1 damage. Shields do not reduce it.',
     actors: 'none',
+    moves: false,
     moveBonus: 0,
     attackBonus: 0,
     attacks: 0,
@@ -95,6 +103,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 2,
     text: 'All monsters: Attack +X, where X is the campaign tier. Then reshuffle the enemy deck.',
     actors: 'all',
+    moves: false,
     moveBonus: 0,
     attackBonus: 'campaignTier',
     attacks: 1,
@@ -106,6 +115,7 @@ export const enemyDeck: readonly EnemyCardDefinition[] = [
     count: 1,
     text: 'Monsters do not move or attack this round.',
     actors: 'none',
+    moves: false,
     moveBonus: 0,
     attackBonus: 0,
     attacks: 0,
