@@ -17,7 +17,9 @@ import { legalActions } from '../engine/legalActions.ts'
 import { Board } from './Board.tsx'
 import { Controls } from './Controls.tsx'
 import { Hand } from './Hand.tsx'
-import { cardById, heroNames } from './names.ts'
+import { lastEnemyCard, type LogRound } from './gameLog.ts'
+import { LogPanel } from './LogPanel.tsx'
+import { cardById, enemyCardById, heroNames } from './names.ts'
 import {
   isMapField,
   matchingPlays,
@@ -33,9 +35,11 @@ interface GameScreenProps {
   readonly context: GameContext
   readonly state: GameState
   readonly onAction?: (action: HeroAction) => void
+  /** What has happened so far. Leave out to hide the log. */
+  readonly log?: readonly LogRound[]
 }
 
-export function GameScreen({ context, state, onAction }: GameScreenProps) {
+export function GameScreen({ context, state, onAction, log }: GameScreenProps) {
   const [pending, setPending] = useState<Pending | null>(null)
   const actions = useMemo(
     () => (onAction ? legalActions(context, state) : []),
@@ -73,7 +77,7 @@ export function GameScreen({ context, state, onAction }: GameScreenProps) {
   return (
     <main className="game">
       <h1>{context.scenario.name}</h1>
-      <StatusBar context={context} state={state} />
+      <StatusBar context={context} state={state} log={log} />
       <div className="table">
         <Board
           context={context}
@@ -90,7 +94,10 @@ export function GameScreen({ context, state, onAction }: GameScreenProps) {
           onSpaceClick={(to) => pick({ field: 'to', value: to })}
           onMonsterClick={(id) => field && pick({ field, value: id })}
         />
-        <Monsters state={state} />
+        <div className="side">
+          {log && <LogPanel context={context} log={log} />}
+          <Monsters state={state} />
+        </div>
       </div>
       {onAction && (
         <Controls
@@ -122,9 +129,10 @@ export function GameScreen({ context, state, onAction }: GameScreenProps) {
   )
 }
 
-function StatusBar({ context, state }: GameScreenProps) {
-  const lastFlip = state.enemyDeck.discard.at(-1)
-  const lastFlipName = lastFlip && context.enemyCards.find((card) => card.id === lastFlip)?.name
+function StatusBar({ context, state, log }: GameScreenProps) {
+  // From the log, not the enemy discard pile: Unleash Doom shuffles that pile away.
+  const lastFlip = log && lastEnemyCard(log)
+  const lastFlipName = lastFlip && enemyCardById(context, lastFlip).name
   return (
     <dl className="status" aria-label="Status">
       <Stat label="Hero" value={heroNames[state.heroId]} />

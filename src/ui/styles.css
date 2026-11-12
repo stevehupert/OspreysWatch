@@ -115,10 +115,18 @@ h2 {
   align-items: start;
 }
 
-/* On narrow screens the map and the monster list stack. The monster list moves below the hand,
+/* Beside the map on wide screens: the log above the monster list. */
+.side {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+/* On narrow screens everything stacks. The log and the monster list move below the hand,
    so the question being asked (the controls) sits right under the map you click on. */
 @media (max-width: 1000px) {
-  .table {
+  .table,
+  .side {
     display: contents;
   }
   .status {
@@ -133,12 +141,60 @@ h2 {
   .game > [aria-label='Hand'] {
     order: 4;
   }
-  .monsters {
+  .log {
     order: 5;
   }
-  .piles {
+  .monsters {
     order: 6;
   }
+  .piles {
+    order: 7;
+  }
+}
+
+/* The game log */
+
+.log {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.log details + details {
+  margin-top: 8px;
+}
+
+.log summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.log ol {
+  margin: 6px 0 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.log li {
+  padding: 3px 0 3px 8px;
+  border-left: 3px solid transparent;
+}
+
+.log .line-hero {
+  border-left-color: var(--hero);
+}
+
+.log .line-monsters {
+  border-left-color: var(--goblin);
+  margin-left: 12px;
+}
+
+.log .line-round {
+  color: var(--muted);
+}
+
+.log .line-result {
+  font-weight: 700;
 }
 
 .board {

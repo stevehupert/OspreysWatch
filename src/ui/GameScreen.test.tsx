@@ -129,3 +129,33 @@ describe('GameScreen with an empty hand', () => {
     expect(html).toContain('>Rest</button>')
   })
 })
+
+describe('GameScreen with a log', () => {
+  const start = createGame(context, 'warrior', 1)
+
+  it('shows the last enemy card from the log, even after Unleash Doom emptied the enemy discard pile', () => {
+    const log = [
+      {
+        round: 3,
+        events: [
+          { kind: 'enemyCardFlipped' as const, card: 'unleash-doom', deckRefilled: false },
+          { kind: 'enemyDeckReshuffled' as const },
+        ],
+      },
+    ]
+    const state: GameState = { ...start, enemyDeck: { ...start.enemyDeck, discard: [] } }
+    const html = renderToStaticMarkup(
+      <GameScreen context={context} state={state} onAction={() => {}} log={log} />,
+    )
+    expect(html).toContain('<dd>Unleash Doom</dd>')
+    expect(html).toContain('<summary>Round 3</summary>')
+    expect(html).toContain('the whole enemy deck is shuffled together again')
+  })
+
+  it('says when nothing has happened yet', () => {
+    const html = renderToStaticMarkup(
+      <GameScreen context={context} state={start} onAction={() => {}} log={[]} />,
+    )
+    expect(html).toContain('Nothing has happened yet.')
+  })
+})
