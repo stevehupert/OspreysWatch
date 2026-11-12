@@ -23,12 +23,8 @@ describe.each([
 })
 
 describe('Warrior deck data', () => {
-  it('marks the three burn cards from the spec', () => {
-    expect(names(warriorDeck, (card) => card.halfA.burn)).toEqual([
-      'Charge',
-      'Heavy Blow',
-      'Last Stand',
-    ])
+  it('marks the two burn cards from the spec', () => {
+    expect(names(warriorDeck, (card) => card.halfA.burn)).toEqual(['Heavy Blow', 'Last Stand'])
   })
 
   it('has the shield halves from the spec', () => {

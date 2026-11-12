@@ -82,13 +82,15 @@ export interface GameContext {
 export interface ContextOptions {
   readonly scenario?: ScenarioDefinition
   readonly rules?: Partial<ScenarioRules>
+  /** Replace a hero's deck. Tests use it to replay games recorded with older card versions. */
+  readonly heroCards?: Partial<Record<HeroId, readonly CardDefinition[]>>
   readonly shuffleHero?: Shuffler
   readonly shuffleEnemy?: Shuffler
 }
 
 export function createContext(options: ContextOptions = {}): GameContext {
   const scenario = options.scenario ?? scenario1
-  const heroCards = { warrior: warriorDeck, mage: mageDeck }
+  const heroCards = { warrior: warriorDeck, mage: mageDeck, ...options.heroCards }
   return {
     scenario,
     board: createBoard(scenario),
@@ -97,7 +99,7 @@ export function createContext(options: ContextOptions = {}): GameContext {
     roundRules,
     generic: genericActions,
     heroCards,
-    cardsById: new Map([...warriorDeck, ...mageDeck].map((card) => [card.id, card])),
+    cardsById: new Map([...heroCards.warrior, ...heroCards.mage].map((card) => [card.id, card])),
     enemyCards: enemyCardDefinitions,
     shuffleHero: options.shuffleHero ?? shuffle,
     shuffleEnemy: options.shuffleEnemy ?? shuffle,

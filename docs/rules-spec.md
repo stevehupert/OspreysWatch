@@ -1,6 +1,8 @@
 # Rules Spec: Solo Tutorial Scenario (MVP)
 
-Status: draft v0.8, 2026-11-11. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+Status: draft v0.9, 2026-11-12. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+
+Changes in v0.9: Charge Half A is now "Move 3, then Attack 2" and no longer a burn half; Warrior bot win rate re-measured (section 11, item 11). The Warrior reference game was recorded with the old Charge and is replayed with it (section 12).
 
 Changes in v0.8: merged with the repository copy of the spec (which had drifted to an older Shadow Lord version); the engine now implements Scenario 1 and the flip-blind bot, so the bot results are re-measured on the real engine (section 11, item 11); added the blocked-push damage (still undecided in detail), the `doorOpensBy` setting, `packTacticsBonus`, and three new open questions (14 to 16).
 
@@ -66,7 +68,7 @@ Every card can instead be played as Move 2, Attack 1 (melee), Loot, or Interact.
 | 5   | Hold the Line | Shield 2 and Heal 1                                | No      | Attack 2 |
 | 6   | Guard Stance  | Shield 1 and Attack 2                              | No      | Move 2   |
 | 7   | Second Wind   | Heal 3                                             | No      | Move 2   |
-| 8   | Charge        | Move 3, then Attack 3                              | Yes     | Move 3   |
+| 8   | Charge        | Move 3, then Attack 2                              | No      | Move 3   |
 | 9   | Heavy Blow    | Attack 5                                           | Yes     | Move 2   |
 | 10  | Last Stand    | Heal 3 and Shield 2                                | Yes     | Attack 2 |
 
@@ -250,7 +252,7 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 ## 11. Open questions and tuning status
 
 1. **Goblin strength.** Resolved: goblin Attack is 2.
-2. **Mage durability and base shield.** Resolved for now: the Mage has 7 health and base shield 0, with four shield-capable cards. The bot results in item 11 suggest she is still the easier hero.
+2. **Mage durability and base shield.** Resolved for now: the Mage has 7 health and base shield 0, with four shield-capable cards. Before v0.9 the bot results in item 11 showed her as the easier hero; since the v0.9 Charge change the Warrior is slightly ahead.
 3. **Base shield as floor.** Resolved: confirmed.
 4. **Rest in both slots.** Undecided. Default is one rest per round.
 5. **Enemy deck.** Resolved: 15 cards for Scenario 1.
@@ -285,6 +287,16 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 
       The port was checked by switching the Doom reshuffle off in a scratch run (600 games): Warrior 45.5% and Mage 58.7%, in line with the Python numbers (46.4% and 61.6%). Blocked-push damage made no measurable difference (Warrior 38.3% with it, 37.8% without). So the whole gap is the Doom reshuffle: a second Unleash Doom (attack +1 for every monster) arrives sooner, and the Warrior, who is already short of cards, pays for it. Interact versus step costs about 2 to 3 points.
 
+    - **Why the Warrior ran out of cards (v0.8 cards, same 1000 seeds).** Two causes. (1) Frightening Roar: the Warrior fights in melee, so after the door opens they end most rounds within 2 of the Ogre and discard a card (4.8 Roar discards per game, against 1.0 for the Mage). With the Roar switched off the Warrior won 46.9% instead of 36.5% and the Mage was unchanged (56.5%). (2) Burns: the Warrior burned 2.9 cards per game and lost 5.0 more to rests, so about 8 of 10 cards were gone by the end. In a typical exhaustion loss the goblins are dead and the Ogre is alive with about 3.6 health left, in round 16 or 17.
+    - **Charge without Burn (v0.9).** Tested as a non-burn card at four strengths (same 1000 seeds, door by step): Move 3 / Attack 3: 79.6%; Move 2 / Attack 3: 66.9%; Move 3 / Attack 2: 62.0%; Move 2 / Attack 2: 49.1%. Attack matters more than Move because of the Ogre's armor (Attack 3 deals 2 to it, Attack 2 deals 1). Chosen: Move 3, then Attack 2. Re-measured with the real engine:
+
+      |         | Door opens by | Wins                      | Lost to health | Lost to exhaustion | Avg round of a win |
+      | ------- | ------------- | ------------------------- | -------------- | ------------------ | ------------------ |
+      | Warrior | step          | 62.0% (plus or minus 3.0) | 15.8%          | 22.2%              | 14.5               |
+      | Warrior | interact      | 62.6% (plus or minus 3.0) | 16.1%          | 21.3%              | 15.0               |
+
+      The Mage is unchanged (56.7% by step, 54.1% by interact), so the Warrior is now about 5 to 8 points ahead instead of about 20 behind.
+
     - **Unknown bot limits.** It plans one play at a time, does not plan its rests, and was tuned on seeds 1 to 40, then tested on different seeds. The TypeScript bot counts the enemy cards left in the draw pile (it does not know their order).
     - Lava remains the key lever against the Ogre: two pushes remove 4 of its 10 health, ignoring armor. The Ogre can walk out of the lava on its next move.
 12. **Mage balance options.** Tested with the solver on the same deals: Ogre Roar range 3 instead of 2 left the Mage's damage taken unchanged (2.75 versus 2.75 per game over 8 deals) and raised the Warrior's slightly (8.5 versus 7.6). Force Push range 2 plus Meteor range 3 also changed nothing (3.0 versus 2.9 over 9 deals). Range alone is not the lever. Done so far: Mage health 8 to 7 (about 4 points of win rate), Mend 3 to 2 (about 5 points) and Arcane Bolt as a burn card (about 12 points); see item 11. Untested: Ogre health 10 to 12; Ogre move 2 to 3.
@@ -306,6 +318,8 @@ Two full games found by the simulator, recorded so the engine can reproduce them
 - "Played as Move 2" means a card's generic action, not its printed half.
 
 ### Warrior (victory in round 12, health 7/10)
+
+Recorded with the v0.8 Charge (Move 3, then Attack 3, burn). The replay test puts that card back (`cardsAsRecorded` in `src/engine/fixtures/warriorReference.ts`), so the game still checks the engine, but it is not a line of play with the current deck.
 
 Deal order: Second Wind, Heavy Blow, Last Stand, Charge, Guard Stance | Shield Bash, Cleave, Hold the Line, Quick Strike, Sweep.
 Flip order: Frenzy, Toxic Fumes, Skirmish, Regroup, Advance, Advance, Skirmish, Unleash Doom, Advance, Skirmish.

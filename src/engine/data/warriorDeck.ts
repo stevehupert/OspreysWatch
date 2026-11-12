@@ -80,11 +80,11 @@ export const warriorDeck: readonly CardDefinition[] = [
     id: 'warrior-charge',
     name: 'Charge',
     halfA: {
-      text: 'Move 3, then Attack 3',
-      burn: true,
+      text: 'Move 3, then Attack 2',
+      burn: false,
       effects: [
         { kind: 'move', distance: 3 },
-        { kind: 'attack', damage: 3, range: 1 },
+        { kind: 'attack', damage: 2, range: 1 },
       ],
     },
     halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
