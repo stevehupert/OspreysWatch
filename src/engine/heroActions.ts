@@ -76,7 +76,10 @@ export function performAction(
   if (action.use === 'loot') return lootChest(context, current)
   if (action.use === 'interact') return interactWithDoor(context, current)
 
-  const effects: readonly Effect[] = generic ? genericEffects(context, action.use) : half.effects
+  const effects: readonly Effect[] =
+    action.use === 'move' || action.use === 'attack'
+      ? genericEffects(context, action.use)
+      : half.effects
   for (const effect of effects) {
     const result = applyEffect(context, current, effect, action)
     if (!result.ok) return result
@@ -86,7 +89,8 @@ export function performAction(
   return succeed(current)
 }
 
-function genericEffects(context: GameContext, use: PlayUse): Effect[] {
+/** What a generic Move or Attack play does. (Loot and Interact have no effects; they are handled separately.) */
+export function genericEffects(context: GameContext, use: 'move' | 'attack'): Effect[] {
   if (use === 'move') return [{ kind: 'move', distance: context.generic.moveDistance }]
   return [
     { kind: 'attack', damage: context.generic.attackDamage, range: context.generic.attackRange },

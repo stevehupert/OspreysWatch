@@ -77,3 +77,55 @@ describe('GameScreen later in a game', () => {
     expect(html).toContain('Shield Bash (Shield 2)')
   })
 })
+
+describe('GameScreen when playing', () => {
+  const start = createGame(context, 'warrior', 1)
+  const renderPlayable = (state: GameState) =>
+    renderToStaticMarkup(<GameScreen context={context} state={state} onAction={() => {}} />)
+
+  it('asks for a card and makes the hand clickable', () => {
+    const html = renderPlayable(start)
+    expect(html).toContain('Round 1, play 1 of 2: click a card in your hand.')
+    expect(html.match(/<button type="button" class="card clickable"/g)).toHaveLength(5)
+  })
+
+  it('offers a rest when the discard pile allows one', () => {
+    const state: GameState = {
+      ...start,
+      deck: { ...start.deck, discard: ['warrior-cleave', 'warrior-second-wind'] },
+    }
+    expect(renderPlayable(state)).toContain('or rest.')
+  })
+
+  it('asks for a discard during Frightening Roar', () => {
+    const html = renderPlayable({ ...start, phase: 'roar' })
+    expect(html).toContain('Frightening Roar')
+    expect(html).toContain('discard it')
+    expect(html.match(/class="card clickable"/g)).toHaveLength(5)
+  })
+
+  it('shows the result and no clickable cards once the game is over', () => {
+    const html = renderPlayable({ ...start, phase: 'over', result: 'defeat-exhausted' })
+    expect(html).toContain('Defeat: you ran out of cards')
+    expect(html).not.toContain('clickable')
+  })
+
+  it('has no controls when read-only', () => {
+    expect(render(start)).not.toContain('aria-label="Controls"')
+  })
+})
+
+describe('GameScreen with an empty hand', () => {
+  it('says that you must rest', () => {
+    const start = createGame(context, 'warrior', 1)
+    const state: GameState = {
+      ...start,
+      deck: { ...start.deck, hand: [], discard: ['warrior-cleave', 'warrior-sweep'] },
+    }
+    const html = renderToStaticMarkup(
+      <GameScreen context={context} state={state} onAction={() => {}} />,
+    )
+    expect(html).toContain('your hand is empty, so you must rest')
+    expect(html).toContain('>Rest</button>')
+  })
+})

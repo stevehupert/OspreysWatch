@@ -1,16 +1,26 @@
 import { useState } from 'react'
 import { createContext, createGame } from '../engine/gameState.ts'
+import type { HeroAction } from '../engine/heroActions.ts'
+import { playAction } from '../engine/round.ts'
 import { GameScreen } from './GameScreen.tsx'
 import { readSetup } from './setup.ts'
 
 function App() {
-  // The game is created once. Nothing changes it yet: playing cards comes in a later step.
-  const [{ context, state }] = useState(() => {
+  const [context] = useState(() => createContext())
+  const [state, setState] = useState(() => {
     const setup = readSetup(window.location.search)
-    const context = createContext()
-    return { context, state: createGame(context, setup.hero, setup.seed) }
+    return createGame(context, setup.hero, setup.seed)
   })
-  return <GameScreen context={context} state={state} />
+
+  const onAction = (action: HeroAction) => {
+    // The screen only offers legal actions, so a refusal here means a bug.
+    const result = playAction(context, state, action)
+    if (!result.ok)
+      throw new Error(`The engine refused ${JSON.stringify(action)}: ${result.reason}`)
+    setState(result.state)
+  }
+
+  return <GameScreen context={context} state={state} onAction={onAction} />
 }
 
 export default App
