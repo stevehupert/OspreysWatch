@@ -3,7 +3,7 @@
 import type { Terrain } from '../engine/data/scenarioTypes.ts'
 import type { GameContext, GameState, MonsterState } from '../engine/gameState.ts'
 import { samePos, terrainAt, type Pos } from '../engine/grid.ts'
-import { heroNames } from './names.ts'
+import { heroNames, spaceName } from './names.ts'
 
 interface BoardProps {
   readonly context: GameContext
@@ -94,7 +94,7 @@ function Cell(props: BoardProps & { readonly pos: Pos }) {
       <button
         type="button"
         className={`${className} selectable`}
-        aria-label={`Move to row ${pos.row}, column ${pos.col}`}
+        aria-label={`Move to ${spaceName(pos)}`}
         onClick={() => props.onSpaceClick?.(pos)}
       >
         {contents}

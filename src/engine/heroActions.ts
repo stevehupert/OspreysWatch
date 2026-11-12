@@ -6,7 +6,9 @@ import type { Effect } from './data/cardTypes.ts'
 import { monsterStats } from './data/monsters.ts'
 import type { Pos } from './data/scenarioTypes.ts'
 import { canRest, playCard, rest, returnFromDiscard } from './deck.ts'
+import { ignoreEvents, type EventSink, type GameEvent } from './events.ts'
 import {
+  currentShield,
   findMonster,
   isOccupied,
   maxHealth,
@@ -55,9 +57,23 @@ export function performAction(
   context: GameContext,
   state: GameState,
   action: HeroAction,
+  log: EventSink = ignoreEvents,
+): ActionResult {
+  // Hold the events back until the action has succeeded: a refused action changes nothing.
+  const events: GameEvent[] = []
+  const result = performChecked(context, state, action, (event) => events.push(event))
+  if (result.ok) events.forEach(log)
+  return result
+}
+
+function performChecked(
+  context: GameContext,
+  state: GameState,
+  action: HeroAction,
+  log: EventSink,
 ): ActionResult {
   if (state.phase !== 'play') return fail('The game is not waiting for a play')
-  if (action.type === 'rest') return performRest(context, state, action.lose)
+  if (action.type === 'rest') return performRest(context, state, action.lose, log)
   if (action.type === 'discard') return fail('Discarding is only for Frightening Roar')
 
   const card = context.cardsById.get(action.card)
@@ -72,16 +88,20 @@ export function performAction(
     playsDone: state.playsDone + 1,
     deck: playCard(state.deck, card, generic ? 'generic' : action.use === 'A' ? 'A' : 'B'),
   }
+  log({ kind: 'played', card: card.id, use: action.use, burned: !generic && half.burn })
+  if (!generic && half.shield !== undefined) {
+    log({ kind: 'shieldShown', card: card.id, value: half.shield, shield: currentShield(current) })
+  }
 
-  if (action.use === 'loot') return lootChest(context, current)
-  if (action.use === 'interact') return interactWithDoor(context, current)
+  if (action.use === 'loot') return lootChest(context, current, log)
+  if (action.use === 'interact') return interactWithDoor(context, current, log)
 
   const effects: readonly Effect[] =
     action.use === 'move' || action.use === 'attack'
       ? genericEffects(context, action.use)
       : half.effects
   for (const effect of effects) {
-    const result = applyEffect(context, current, effect, action)
+    const result = applyEffect(context, current, effect, action, log)
     if (!result.ok) return result
     current = withResultIfOver(result.state)
     if (current.result) break
@@ -97,7 +117,12 @@ export function genericEffects(context: GameContext, use: 'move' | 'attack'): Ef
   ]
 }
 
-function performRest(context: GameContext, state: GameState, lose: string): ActionResult {
+function performRest(
+  context: GameContext,
+  state: GameState,
+  lose: string,
+  log: EventSink,
+): ActionResult {
   if (state.restsThisRound >= context.roundRules.maxRestsPerRound) {
     return fail('You can only rest once per round')
   }
@@ -105,6 +130,12 @@ function performRest(context: GameContext, state: GameState, lose: string): Acti
     return fail('Resting needs more cards in the discard pile')
   if (!state.deck.discard.includes(lose)) return fail(`${lose} is not in the discard pile`)
   const rested = rest(state.deck, lose, state.random, context.deckRules, context.shuffleHero)
+  log({
+    kind: 'rested',
+    lost: lose,
+    shuffled: state.deck.drawPile.length + state.deck.discard.length - 1,
+    drew: rested.deck.hand.length - state.deck.hand.length,
+  })
   return succeed({
     ...state,
     deck: rested.deck,
@@ -114,31 +145,32 @@ function performRest(context: GameContext, state: GameState, lose: string): Acti
   })
 }
 
-function lootChest(context: GameContext, state: GameState): ActionResult {
+function lootChest(context: GameContext, state: GameState, log: EventSink): ActionResult {
   if (state.looted) return fail('The chest is already looted')
   if (manhattan(state.position, context.scenario.chest) !== 1) {
     return fail('You must be next to the chest to loot it')
   }
-  return succeed(
-    withResultIfOver({
-      ...state,
-      looted: true,
-      health: applyHeal(state.health, context.rules.chestPotionHeal, maxHealth(state)),
-    }),
-  )
+  const heal = context.rules.chestPotionHeal
+  const health = applyHeal(state.health, heal, maxHealth(state))
+  log({ kind: 'looted', heal, healthBefore: state.health, healthAfter: health })
+  return succeed(withResultIfOver({ ...state, looted: true, health }))
 }
 
-function interactWithDoor(context: GameContext, state: GameState): ActionResult {
+function interactWithDoor(context: GameContext, state: GameState, log: EventSink): ActionResult {
   if (context.rules.doorOpensBy !== 'interact') return fail('The door opens by stepping onto it')
   if (state.doorOpen) return fail('The door is already open')
   if (manhattan(state.position, context.scenario.door) !== 1) {
     return fail('You must be next to the door to open it')
   }
-  return succeed(openDoor(state))
+  return succeed(openDoor(state, log))
 }
 
 /** Open the door and reveal what was behind it. Revealed monsters do not act until the next round. */
-function openDoor(state: GameState): GameState {
+function openDoor(state: GameState, log: EventSink): GameState {
+  log({
+    kind: 'doorOpened',
+    revealed: state.monsters.filter((m) => !m.revealed && m.health > 0).map((m) => m.id),
+  })
   return {
     ...state,
     doorOpen: true,
@@ -153,16 +185,25 @@ function applyEffect(
   state: GameState,
   effect: Effect,
   choices: PlayChoices,
+  log: EventSink,
 ): ActionResult {
   switch (effect.kind) {
     case 'move':
-      return applyMove(context, state, effect.distance, choices.to)
+      return applyMove(context, state, effect.distance, choices.to, log)
     case 'attack':
-      return applyAttack(state, effect, choices)
+      return applyAttack(state, effect, choices, log)
     case 'push':
-      return applyPush(context, state, effect, choices)
-    case 'heal':
-      return succeed({ ...state, health: applyHeal(state.health, effect.amount, maxHealth(state)) })
+      return applyPush(context, state, effect, choices, log)
+    case 'heal': {
+      const health = applyHeal(state.health, effect.amount, maxHealth(state))
+      log({
+        kind: 'healed',
+        amount: effect.amount,
+        healthBefore: state.health,
+        healthAfter: health,
+      })
+      return succeed({ ...state, health })
+    }
     case 'shield':
       // playCard already put the card face-up in the showing pile.
       return succeed(state)
@@ -176,6 +217,7 @@ function applyEffect(
       ) {
         return fail('Those cards are not all in the discard pile')
       }
+      if (cards.length > 0) log({ kind: 'cardsReturned', cards })
       return succeed({ ...state, deck: returnFromDiscard(state.deck, cards) })
     }
   }
@@ -214,14 +256,16 @@ function applyMove(
   state: GameState,
   distance: number,
   to: Pos | undefined,
+  log: EventSink,
 ): ActionResult {
   if (!to || samePos(to, state.position)) return succeed(state)
   const cost = heroReach(context, state, distance).get(posKey(to))
   if (cost === undefined) return fail('That space is out of reach')
+  log({ kind: 'heroMoved', from: state.position, to })
   const moved = { ...state, position: to }
   // Stepping onto the door opens it and ends the move.
   const opens = terrainAt(context.board, to) === 'door' && !state.doorOpen
-  return succeed(opens ? openDoor(moved) : moved)
+  return succeed(opens ? openDoor(moved, log) : moved)
 }
 
 function targetInRange(
@@ -236,11 +280,22 @@ function targetInRange(
   return monster
 }
 
-function hurt(state: GameState, id: string, amount: number): GameState {
+function hurt(state: GameState, id: string, amount: number, log: EventSink): GameState {
   const monster = findMonster(state, id)
   if (!monster || monster.health <= 0) return state
-  const damage = damageToMonster(amount, monsterStats[monster.kind].armor)
-  return replaceMonster(state, { ...monster, health: applyDamage(monster.health, damage) })
+  const armor = monsterStats[monster.kind].armor
+  const damage = damageToMonster(amount, armor)
+  const health = applyDamage(monster.health, damage)
+  log({
+    kind: 'monsterHit',
+    monster: id,
+    attack: amount,
+    armor,
+    damage,
+    healthBefore: monster.health,
+    healthAfter: health,
+  })
+  return replaceMonster(state, { ...monster, health })
 }
 
 /** Damage that ignores armor (Lava, a blocked push). */
@@ -252,13 +307,18 @@ function hurtIgnoringArmor(state: GameState, id: string, amount: number): GameSt
 
 type AttackEffect = Extract<Effect, { kind: 'attack' }>
 
-function applyAttack(state: GameState, effect: AttackEffect, choices: PlayChoices): ActionResult {
+function applyAttack(
+  state: GameState,
+  effect: AttackEffect,
+  choices: PlayChoices,
+  log: EventSink,
+): ActionResult {
   let next = state
 
   if (effect.area === 'allAdjacent') {
     for (const monster of targetableMonsters(state)) {
       if (manhattan(state.position, monster.pos) <= effect.range) {
-        next = hurt(next, monster.id, effect.damage)
+        next = hurt(next, monster.id, effect.damage, log)
       }
     }
     return succeed(next)
@@ -269,25 +329,28 @@ function applyAttack(state: GameState, effect: AttackEffect, choices: PlayChoice
   if (typeof target === 'string') return fail(target)
 
   const targetPos = target.pos
-  next = hurt(next, target.id, effect.damage)
+  next = hurt(next, target.id, effect.damage, log)
 
   if (effect.also?.to === 'secondAdjacent' && choices.second !== undefined) {
     const second = targetInRange(state, choices.second, 1)
     if (typeof second === 'string') return fail(second)
     if (second === undefined || second.id === target.id)
       return fail('Pick a different second enemy')
-    next = hurt(next, second.id, effect.also.damage)
+    next = hurt(next, second.id, effect.also.damage, log)
   }
   if (effect.also?.to === 'adjacentToTarget') {
     for (const other of targetableMonsters(next)) {
       if (other.id !== target.id && manhattan(targetPos, other.pos) === 1) {
-        next = hurt(next, other.id, effect.also.damage)
+        next = hurt(next, other.id, effect.also.damage, log)
       }
     }
   }
   if (effect.freeze) {
     const after = findMonster(next, target.id)
-    if (after && after.health > 0) next = replaceMonster(next, { ...after, frozen: true })
+    if (after && after.health > 0) {
+      log({ kind: 'frozen', monster: target.id })
+      next = replaceMonster(next, { ...after, frozen: true })
+    }
   }
   return succeed(next)
 }
@@ -297,6 +360,7 @@ function applyPush(
   state: GameState,
   effect: Extract<Effect, { kind: 'push' }>,
   choices: PlayChoices,
+  log: EventSink,
 ): ActionResult {
   const target = targetInRange(state, choices.target, effect.range)
   if (target === undefined) return succeed(state)
@@ -325,25 +389,42 @@ function applyPush(
 
   let next = state
   let position = live.pos
+  let blocked = false
+  let lava = false
+  let damage = 0
   for (let i = 0; i < effect.distance; i++) {
     const ahead: Pos = { row: position.row + step.row, col: position.col + step.col }
     const terrain = terrainAt(context.board, ahead)
-    const blocked =
+    blocked =
       terrain === undefined ||
       terrain === 'rubble' ||
       terrain === 'chest' ||
       (terrain === 'door' && !state.doorOpen) ||
       isOccupied(next, ahead, live.id)
     if (blocked) {
-      next = hurtIgnoringArmor(next, live.id, context.rules.blockedPushDamage)
+      damage = context.rules.blockedPushDamage
+      next = hurtIgnoringArmor(next, live.id, damage)
       break
     }
     position = ahead
     next = replaceMonster(next, { ...(findMonster(next, live.id) as MonsterState), pos: position })
     if (terrain === 'lava') {
-      next = hurtIgnoringArmor(next, live.id, context.rules.lavaDamage)
+      lava = true
+      damage = context.rules.lavaDamage
+      next = hurtIgnoringArmor(next, live.id, damage)
       break
     }
   }
+  log({
+    kind: 'pushed',
+    monster: live.id,
+    from: live.pos,
+    to: position,
+    blocked,
+    lava,
+    damage,
+    healthBefore: live.health,
+    healthAfter: (findMonster(next, live.id) as MonsterState).health,
+  })
   return succeed(next)
 }

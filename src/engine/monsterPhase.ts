@@ -6,6 +6,7 @@ import { monsterStats } from './data/monsters.ts'
 import type { Pos } from './data/scenarioTypes.ts'
 import { clearShowing } from './deck.ts'
 import { afterEnemyCardResolves, enemyAttackBonus, flipEnemyCard } from './enemyDeck.ts'
+import { ignoreEvents, type EventSink } from './events.ts'
 import {
   actingMonsters,
   aliveMonsters,
@@ -31,15 +32,20 @@ export function runMonsterPhase(
   context: GameContext,
   state: GameState,
   forcedCardId?: string,
+  log: EventSink = ignoreEvents,
 ): GameState {
   if (state.result) return state
   const acting = actingMonsters(state)
-  if (acting.length === 0) return state
+  if (acting.length === 0) {
+    log({ kind: 'noMonsterPhase' })
+    return state
+  }
 
   let current = state
   let card: EnemyCardDefinition
   if (forcedCardId !== undefined) {
     card = findEnemyCard(context, forcedCardId)
+    log({ kind: 'enemyCardFlipped', card: card.id, deckRefilled: false })
   } else {
     const flipped = flipEnemyCard(
       state.enemyDeck,
@@ -48,11 +54,26 @@ export function runMonsterPhase(
       context.shuffleEnemy,
     )
     card = flipped.card
+    log({
+      kind: 'enemyCardFlipped',
+      card: card.id,
+      deckRefilled: state.enemyDeck.drawPile.length === 0,
+    })
     const settled = afterEnemyCardResolves(flipped.deck, card, flipped.random, context.shuffleEnemy)
     current = { ...state, enemyDeck: settled.deck, random: settled.random }
   }
 
-  current = resolveEnemyCard(context, current, card, acting)
+  current = resolveEnemyCard(context, current, card, acting, log)
+  if (card.reshuffle && forcedCardId === undefined) log({ kind: 'enemyDeckReshuffled' })
+
+  const showing = current.deck.showing
+  if (showing.length > 0) {
+    log({
+      kind: 'shieldsCleared',
+      discarded: showing.filter((s) => !s.burned).map((s) => s.cardId),
+      lost: showing.filter((s) => s.burned).map((s) => s.cardId),
+    })
+  }
   return {
     ...current,
     monsters: current.monsters.map((m) => (m.frozen ? { ...m, frozen: false } : m)),
@@ -71,6 +92,7 @@ function resolveEnemyCard(
   state: GameState,
   card: EnemyCardDefinition,
   acting: readonly MonsterState[],
+  log: EventSink,
 ): GameState {
   let current = state
   const actors = actorsFor(card, acting, state)
@@ -79,17 +101,17 @@ function resolveEnemyCard(
   for (const actor of actors) {
     if (current.result) break
     // A monster moves once, then makes all of its attacks.
-    if (card.moves) current = moveMonster(context, current, actor.id, card.moveBonus)
+    if (card.moves) current = moveMonster(context, current, actor.id, card.moveBonus, log)
     for (let i = 0; i < card.attacks && !current.result; i++) {
-      current = attackHero(context, current, actor.id, bonus)
+      current = attackHero(context, current, actor.id, bonus, log)
     }
   }
 
-  if (card.mudDamage && heroTerrain(context, current) === 'mud') {
-    current = withResultIfOver({
-      ...current,
-      health: applyDamage(current.health, context.rules.toxicFumesDamage),
-    })
+  if (card.mudDamage && heroTerrain(context, current) === 'mud' && !current.result) {
+    const damage = context.rules.toxicFumesDamage
+    const health = applyDamage(current.health, damage)
+    log({ kind: 'toxicFumes', damage, healthBefore: current.health, healthAfter: health })
+    current = withResultIfOver({ ...current, health })
   }
   return current
 }
@@ -118,10 +140,15 @@ function moveMonster(
   state: GameState,
   id: string,
   moveBonus: number,
+  log: EventSink,
 ): GameState {
   const monster = findMonster(state, id)
-  if (!monster || monster.health <= 0 || monster.frozen) return state
+  if (!monster || monster.health <= 0) return state
   if (manhattan(monster.pos, state.position) === 1) return state
+  if (monster.frozen) {
+    log({ kind: 'monsterFrozenInPlace', monster: id })
+    return state
+  }
 
   const paths = shortestPaths(
     context.board,
@@ -152,6 +179,9 @@ function moveMonster(
     spent += cost
     stop = step
   }
+  if (posKey(stop) !== posKey(monster.pos)) {
+    log({ kind: 'monsterMoved', monster: id, from: monster.pos, to: stop })
+  }
   return replaceMonster(state, { ...monster, pos: stop })
 }
 
@@ -161,10 +191,14 @@ function attackHero(
   state: GameState,
   id: string,
   cardBonus: number,
+  log: EventSink,
 ): GameState {
   const monster = findMonster(state, id)
   if (!monster || monster.health <= 0) return state
-  if (manhattan(monster.pos, state.position) !== 1) return state
+  if (manhattan(monster.pos, state.position) !== 1) {
+    log({ kind: 'monsterOutOfReach', monster: id })
+    return state
+  }
 
   const packTactics =
     monster.kind === 'goblin' &&
@@ -172,13 +206,21 @@ function attackHero(
       (other) =>
         other.id !== id && other.kind === 'goblin' && manhattan(other.pos, state.position) === 1,
     )
-  const damage = damageToHero(
-    {
-      attack: monsterStats[monster.kind].attack,
-      cardModifier: cardBonus,
-      bonus: packTactics ? context.rules.packTacticsBonus : 0,
-    },
-    currentShield(state),
-  )
-  return withResultIfOver({ ...state, health: applyDamage(state.health, damage) })
+  const attack = monsterStats[monster.kind].attack
+  const packBonus = packTactics ? context.rules.packTacticsBonus : 0
+  const shield = currentShield(state)
+  const damage = damageToHero({ attack, cardModifier: cardBonus, bonus: packBonus }, shield)
+  const health = applyDamage(state.health, damage)
+  log({
+    kind: 'monsterAttacked',
+    monster: id,
+    attack,
+    cardBonus,
+    packTactics: packBonus,
+    shield,
+    damage,
+    healthBefore: state.health,
+    healthAfter: health,
+  })
+  return withResultIfOver({ ...state, health })
 }

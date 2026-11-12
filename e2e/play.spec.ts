@@ -69,3 +69,22 @@ test("marks Charge's chosen space while you pick its target", async ({ page }) =
   await page.getByRole('button', { name: 'Move to row 3, column 4' }).click()
   await expect(page.getByLabel('You move here')).toBeVisible()
 })
+
+test('the log explains your play and the monster phase that follows', async ({ page }) => {
+  await card(page, 'Charge').click()
+  await controls(page).getByRole('button', { name: 'A: Move 3, then Attack 2' }).click()
+  await page.getByRole('button', { name: 'Move to row 3, column 4' }).click()
+  await page.getByRole('button', { name: 'Target G2' }).click()
+
+  const log = page.getByLabel('Game log')
+  await expect(log.getByText('Round 1')).toBeVisible()
+  await expect(log).toContainText('You play Charge, half A: Move 3, then Attack 2.')
+  await expect(log).toContainText('You move from row 3, column 1 to row 3, column 4.')
+  await expect(log).toContainText('You hit Goblin G2: 2 − 0 (armor) = 2 damage. Health 4 → 2.')
+  await expect(log).toContainText('Enemy card:')
+
+  // The status bar names the same enemy card as the log.
+  const flipped = await log.locator('li', { hasText: 'Enemy card:' }).first().textContent()
+  const name = flipped?.match(/^Enemy card: (.+?)[.!] /)?.[1] ?? ''
+  await expect(page.getByLabel('Status')).toContainText(name)
+})

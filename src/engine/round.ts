@@ -3,6 +3,7 @@
 //   -> Frightening Roar, if in range -> draw back up to a full hand.
 
 import { discardFromHand, drawUpTo, canRest } from './deck.ts'
+import { ignoreEvents, type EventSink } from './events.ts'
 import { manhattan } from './grid.ts'
 import { performAction, type ActionResult, type HeroAction } from './heroActions.ts'
 import { runMonsterPhase } from './monsterPhase.ts'
@@ -17,34 +18,59 @@ export function playAction(
   context: GameContext,
   state: GameState,
   action: HeroAction,
+  log: EventSink = ignoreEvents,
+): ActionResult {
+  const result = advance(context, state, action, log)
+  if (result.ok && result.state.result && !state.result) {
+    log({ kind: 'gameOver', result: result.state.result })
+  }
+  return result
+}
+
+function advance(
+  context: GameContext,
+  state: GameState,
+  action: HeroAction,
+  log: EventSink,
 ): ActionResult {
   if (state.phase === 'over') return { ok: false, reason: 'The game is over' }
-  if (state.phase === 'roar') return discardForRoar(context, state, action)
+  if (state.phase === 'roar') return discardForRoar(context, state, action, log)
 
-  const performed = performAction(context, state, action)
+  const performed = performAction(context, state, action, log)
   if (!performed.ok) return performed
   let current = performed.state
   if (current.result) return { ok: true, state: current }
 
   if (current.playsDone === 1) {
-    current = runMonsterPhase(context, current)
+    current = runMonsterPhase(context, current, undefined, log)
     current = failIfExhausted(context, current)
   } else if (roarApplies(context, current)) {
     current = { ...current, phase: 'roar' }
   } else {
-    current = endRound(context, current)
+    current = endRound(context, current, undefined, log)
   }
   return { ok: true, state: current }
 }
 
-function discardForRoar(context: GameContext, state: GameState, action: HeroAction): ActionResult {
+function discardForRoar(
+  context: GameContext,
+  state: GameState,
+  action: HeroAction,
+  log: EventSink,
+): ActionResult {
   if (action.type !== 'discard') return { ok: false, reason: 'Frightening Roar: discard a card' }
   if (!state.deck.hand.includes(action.card)) {
     return { ok: false, reason: `${action.card} is not in your hand` }
   }
+  log({ kind: 'roarDiscard', card: action.card })
   return {
     ok: true,
-    state: endRound(context, { ...state, deck: discardFromHand(state.deck, action.card) }),
+    state: endRound(
+      context,
+      { ...state, deck: discardFromHand(state.deck, action.card) },
+      undefined,
+      log,
+    ),
   }
 }
 
@@ -66,16 +92,28 @@ export function roarApplies(context: GameContext, state: GameState): boolean {
  * Finish a round: draw back up to a full hand and start the next round.
  * If Roar still has to be paid, `roarDiscard` names the card (the first card in hand if left out).
  */
-export function endRound(context: GameContext, state: GameState, roarDiscard?: string): GameState {
+export function endRound(
+  context: GameContext,
+  state: GameState,
+  roarDiscard?: string,
+  log: EventSink = ignoreEvents,
+): GameState {
   let current = state
   if (current.phase === 'play' && roarApplies(context, current)) {
     const card = roarDiscard ?? current.deck.hand[0]
+    log({ kind: 'roarDiscard', card })
     current = { ...current, deck: discardFromHand(current.deck, card) }
   }
+  const deck = drawUpTo(current.deck, context.deckRules)
+  log({
+    kind: 'roundEnded',
+    round: current.round,
+    drew: deck.hand.length - current.deck.hand.length,
+  })
   current = {
     ...current,
     phase: 'play',
-    deck: drawUpTo(current.deck, context.deckRules),
+    deck,
     round: current.round + 1,
     playsDone: 0,
     restsThisRound: 0,
