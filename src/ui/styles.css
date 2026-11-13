@@ -584,6 +584,8 @@ button.card:focus-visible {
 .cards.lose button.card:focus-visible {
   border-color: var(--burn);
   box-shadow: 0 0 0 3px var(--burn);
+}
+
 /* Frightening Roar: the next card clicked is discarded, not played, so the hand, the controls and
    the status bar turn orange until it is paid. */
 
