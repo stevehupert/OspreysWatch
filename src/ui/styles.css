@@ -569,3 +569,37 @@ button.card:focus-visible {
 .end.result-defeat-exhausted {
   border-color: var(--lose);
 }
+
+/* Frightening Roar: the next card clicked is discarded, not played, so the hand, the controls and
+   the status bar turn orange until it is paid. */
+
+:root {
+  --roar: #d26a00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --roar: #f29a4a;
+  }
+}
+
+.controls.roar {
+  border: 2px solid var(--roar);
+}
+
+.controls.roar .prompt,
+.stat.roar dt,
+.stat.roar dd {
+  color: var(--roar);
+  font-weight: 700;
+}
+
+.hand.discarding button.card {
+  border-color: var(--roar);
+}
+
+.hand.discarding button.card:hover,
+.hand.discarding button.card:focus-visible {
+  border-color: var(--roar);
+  box-shadow: 0 0 0 3px var(--roar);
+}

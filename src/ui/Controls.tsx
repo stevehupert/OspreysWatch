@@ -30,9 +30,10 @@ interface ControlsProps {
 export function Controls(props: ControlsProps) {
   const { context, state, pending } = props
 
+  const roar = state.phase === 'roar'
   return (
-    <section className="panel controls" aria-label="Controls">
-      {state.phase === 'roar' ? (
+    <section className={`panel controls${roar ? ' roar' : ''}`} aria-label="Controls">
+      {roar ? (
         <p className="prompt">
           Frightening Roar: the Ogre is within {context.rules.roarRange} spaces. Click a card in
           your hand to discard it.
