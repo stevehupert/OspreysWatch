@@ -141,6 +141,7 @@ export function GameScreen(props: GameScreenProps) {
         }
         selected={pending?.kind === 'play' ? pending.card : undefined}
         onCardClick={clickCard}
+        discarding={!!onAction && state.phase === 'roar'}
       />
       <Piles context={context} state={state} />
     </main>
@@ -160,6 +161,9 @@ function StatusBar({ context, state, log, seed }: GameScreenProps) {
       <Stat label="Enemy deck" value={`${state.enemyDeck.drawPile.length} left`} />
       <Stat label="Last enemy card" value={lastFlipName ?? 'None yet'} />
       {seed !== undefined && <Stat label="Seed" value={seed} />}
+      {state.phase === 'roar' && (
+        <Stat label="Frightening Roar" value="Discard a card" className="roar" />
+      )}
     </dl>
   )
 }
