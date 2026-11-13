@@ -1,6 +1,8 @@
 # Rules Spec: Solo Tutorial Scenario (MVP)
 
-Status: draft v0.9, 2026-11-12. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+Status: draft v0.10, 2026-11-12. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+
+Changes in v0.10: draft story text for the start and end screens (section 9); victoryXp and chestGold are now in the scenario data (`rewards` in `src/engine/data/scenario1.ts`).
 
 Changes in v0.9: Charge Half A is now "Move 3, then Attack 2" and no longer a burn half; Warrior bot win rate re-measured (section 11, item 11). The Warrior reference game was recorded with the old Charge and is replayed with it (section 12).
 
@@ -214,10 +216,16 @@ Key: H = hero start, M = Mud, X = Rubble, L = Lava, O = Ogre start, $ = treasure
 
 **Story.** Get in and out, defeat every monster, and take the loot.
 
+**Story text (draft, to be rewritten).** Stored in `src/engine/data/scenario1.ts` (`story`).
+
+- Start screen: "Floodwater has seeped into the old crypt, and goblins have crept in after it. Something larger stirs in the ritual chamber beyond the door. Get in and out, defeat every monster, and take the loot."
+- Victory: "The last monster falls and the crypt goes quiet. You pry open the chest, drink the potion you find inside, and climb back into the daylight with its treasure."
+- Defeat: "The crypt is too much for you this time. You stagger back to the surface empty-handed, but wiser for the attempt."
+
 **Victory.** All monsters are dead and the chest has been looted. The game ends the moment both are true.
 **Defeat.** You are out (0 health or exhausted). Defeat still earns XP (amount to be decided) but no loot.
 
-In the MVP the end screen only shows the matching text.
+In the MVP the end screen only shows the matching text and what was earned: on a victory, victoryXp and the chest's chestGold; on a defeat, no loot and XP "not decided yet" (open question 6).
 
 ## 10. Configuration values
 

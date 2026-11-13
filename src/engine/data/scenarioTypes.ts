@@ -32,4 +32,22 @@ export interface ScenarioDefinition {
   readonly door: Pos
   readonly chest: Pos
   readonly monsters: readonly ScenarioMonster[]
+  /** Story text for the start and end screens. */
+  readonly story: ScenarioStory
+  /** What the end screen reports as earned. */
+  readonly rewards: ScenarioRewards
+}
+
+export interface ScenarioStory {
+  /** Shown on the start screen. */
+  readonly intro: string
+  readonly victory: string
+  readonly defeat: string
+}
+
+/** Not used by the rules yet: there is no campaign in the MVP, so the end screen only reports these. */
+export interface ScenarioRewards {
+  readonly victoryXp: number
+  /** Gold recorded as the chest's loot, earned only on a victory. */
+  readonly chestGold: number
 }
