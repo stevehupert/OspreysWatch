@@ -64,4 +64,19 @@ export const scenario1: ScenarioDefinition = {
     { id: 'G3', kind: 'goblin', at: tileA(2, 6), hidden: false },
     { id: 'O', kind: 'ogre', at: tileB(4, 4), hidden: true },
   ],
+  // Draft story text. The spec (section 9) gives only the goal sentence that ends the intro.
+  story: {
+    intro:
+      'Floodwater has seeped into the old crypt, and goblins have crept in after it. Something larger stirs in the ritual chamber beyond the door. Get in and out, defeat every monster, and take the loot.',
+    victory:
+      'The last monster falls and the crypt goes quiet. You pry open the chest, drink the potion you find inside, and climb back into the daylight with its treasure.',
+    defeat:
+      'The crypt is too much for you this time. You stagger back to the surface empty-handed, but wiser for the attempt.',
+  },
+  // Rules-spec section 10: victoryXp, defeatXp and chestGold.
+  rewards: {
+    victoryXp: 2,
+    defeatXp: 1,
+    chestGold: 10,
+  },
 }

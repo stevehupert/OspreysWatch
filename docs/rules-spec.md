@@ -1,6 +1,8 @@
 # Rules Spec: Solo Tutorial Scenario (MVP)
 
-Status: draft v0.9, 2026-11-12. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+Status: draft v0.10, 2026-11-12. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+
+Changes in v0.10: draft story text for the start and end screens (section 9); a defeat earns 1 XP (defeatXp, open question 6 resolved); victoryXp, defeatXp and chestGold are in the scenario data (`rewards` in `src/engine/data/scenario1.ts`).
 
 Changes in v0.9: Charge Half A is now "Move 3, then Attack 2" and no longer a burn half; Warrior bot win rate re-measured (section 11, item 11). The Warrior reference game was recorded with the old Charge and is replayed with it (section 12).
 
@@ -214,10 +216,16 @@ Key: H = hero start, M = Mud, X = Rubble, L = Lava, O = Ogre start, $ = treasure
 
 **Story.** Get in and out, defeat every monster, and take the loot.
 
-**Victory.** All monsters are dead and the chest has been looted. The game ends the moment both are true.
-**Defeat.** You are out (0 health or exhausted). Defeat still earns XP (amount to be decided) but no loot.
+**Story text (draft, to be rewritten).** Stored in `src/engine/data/scenario1.ts` (`story`).
 
-In the MVP the end screen only shows the matching text.
+- Start screen: "Floodwater has seeped into the old crypt, and goblins have crept in after it. Something larger stirs in the ritual chamber beyond the door. Get in and out, defeat every monster, and take the loot."
+- Victory: "The last monster falls and the crypt goes quiet. You pry open the chest, drink the potion you find inside, and climb back into the daylight with its treasure."
+- Defeat: "The crypt is too much for you this time. You stagger back to the surface empty-handed, but wiser for the attempt."
+
+**Victory.** All monsters are dead and the chest has been looted. The game ends the moment both are true.
+**Defeat.** You are out (0 health or exhausted). Defeat still earns XP (defeatXp, 1) but no loot.
+
+In the MVP the end screen only shows the matching text and what was earned: on a victory, victoryXp and the chest's chestGold; on a defeat, defeatXp and no loot.
 
 ## 10. Configuration values
 
@@ -248,6 +256,7 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 | doorOpensBy                        | step                                             |
 | chestGold                          | 10 (not used by the engine yet; end screen only) |
 | victoryXp                          | 2 (not used by the engine yet; end screen only)  |
+| defeatXp                           | 1 (not used by the engine yet; end screen only)  |
 
 ## 11. Open questions and tuning status
 
@@ -256,7 +265,7 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 3. **Base shield as floor.** Resolved: confirmed.
 4. **Rest in both slots.** Undecided. Default is one rest per round.
 5. **Enemy deck.** Resolved: 15 cards for Scenario 1.
-6. **Defeat XP.** Amount to be decided.
+6. **Defeat XP.** Resolved: a defeat earns 1 XP (defeatXp), half of a victory's 2.
 7. **Revival.** Not applicable in solo. Undecided for multi-hero.
 8. **Flanked! tie-break.** Not needed solo. Needed when there are several heroes.
 9. **Enemy deck running out and Unleash Doom reshuffle.** Games with three goblins can last longer than 15 flips in rare cases. The rules say to reshuffle the enemy discard into a new deck (and Unleash Doom does the same). The Python simulator never reshuffled: it replayed the same 15-card order, and it did not reshuffle after Unleash Doom either. **The engine now implements the real rules** (the whole deck, the Unleash Doom card included, is reshuffled after Unleash Doom resolves). This matters more than first thought: with 2 Unleash Doom cards in 15, Doom shows up early and the reshuffle puts a second Doom back in play. See item 11 for the effect on win rates. The reference games in section 12 were recorded without the Doom reshuffle, so the engine's tests script the order of the flips after Doom (see the conventions there).

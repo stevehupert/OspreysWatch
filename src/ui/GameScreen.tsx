@@ -16,6 +16,7 @@ import type { HeroAction } from '../engine/heroActions.ts'
 import { legalActions } from '../engine/legalActions.ts'
 import { Board } from './Board.tsx'
 import { Controls } from './Controls.tsx'
+import { EndPanel } from './EndPanel.tsx'
 import { Hand } from './Hand.tsx'
 import { lastEnemyCard, type LogRound } from './gameLog.ts'
 import { LogPanel } from './LogPanel.tsx'
@@ -29,6 +30,7 @@ import {
   type Pending,
   type Pick,
 } from './selection.ts'
+import { Stat } from './Stat.tsx'
 import { warningsFor } from './warnings.ts'
 
 interface GameScreenProps {
@@ -37,9 +39,15 @@ interface GameScreenProps {
   readonly onAction?: (action: HeroAction) => void
   /** What has happened so far. Leave out to hide the log. */
   readonly log?: readonly LogRound[]
+  /** The seed this game was dealt with, shown so the game can be replayed. */
+  readonly seed?: number
+  /** Shown as buttons on the end panel when given. */
+  readonly onReplay?: () => void
+  readonly onNewGame?: () => void
 }
 
-export function GameScreen({ context, state, onAction, log }: GameScreenProps) {
+export function GameScreen(props: GameScreenProps) {
+  const { context, state, onAction, log } = props
   const [pending, setPending] = useState<Pending | null>(null)
   const actions = useMemo(
     () => (onAction ? legalActions(context, state) : []),
@@ -77,7 +85,17 @@ export function GameScreen({ context, state, onAction, log }: GameScreenProps) {
   return (
     <main className="game">
       <h1>{context.scenario.name}</h1>
-      <StatusBar context={context} state={state} log={log} />
+      {state.result && (
+        <EndPanel
+          context={context}
+          state={state}
+          result={state.result}
+          seed={props.seed}
+          onReplay={props.onReplay}
+          onNewGame={props.onNewGame}
+        />
+      )}
+      <StatusBar context={context} state={state} log={log} seed={props.seed} />
       <div className="table">
         <Board
           context={context}
@@ -99,7 +117,7 @@ export function GameScreen({ context, state, onAction, log }: GameScreenProps) {
           <Monsters state={state} />
         </div>
       </div>
-      {onAction && (
+      {onAction && !state.result && (
         <Controls
           context={context}
           state={state}
@@ -129,7 +147,7 @@ export function GameScreen({ context, state, onAction, log }: GameScreenProps) {
   )
 }
 
-function StatusBar({ context, state, log }: GameScreenProps) {
+function StatusBar({ context, state, log, seed }: GameScreenProps) {
   // From the log, not the enemy discard pile: Unleash Doom shuffles that pile away.
   const lastFlip = log && lastEnemyCard(log)
   const lastFlipName = lastFlip && enemyCardById(context, lastFlip).name
@@ -141,16 +159,8 @@ function StatusBar({ context, state, log }: GameScreenProps) {
       <Stat label="Round" value={state.round} />
       <Stat label="Enemy deck" value={`${state.enemyDeck.drawPile.length} left`} />
       <Stat label="Last enemy card" value={lastFlipName ?? 'None yet'} />
+      {seed !== undefined && <Stat label="Seed" value={seed} />}
     </dl>
-  )
-}
-
-function Stat({ label, value }: { readonly label: string; readonly value: string | number }) {
-  return (
-    <div className="stat">
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
   )
 }
 

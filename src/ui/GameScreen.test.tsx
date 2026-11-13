@@ -104,10 +104,16 @@ describe('GameScreen when playing', () => {
     expect(html.match(/class="card clickable"/g)).toHaveLength(5)
   })
 
-  it('shows the result and no clickable cards once the game is over', () => {
+  it('shows the end panel, no controls and no clickable cards once the game is over', () => {
     const html = renderPlayable({ ...start, phase: 'over', result: 'defeat-exhausted' })
-    expect(html).toContain('Defeat: you ran out of cards')
+    expect(html).toContain('aria-label="Game over"')
+    expect(html).toContain('You ran out of cards')
+    expect(html).not.toContain('aria-label="Controls"')
     expect(html).not.toContain('clickable')
+  })
+
+  it('has no end panel while the game is on', () => {
+    expect(renderPlayable(start)).not.toContain('Game over')
   })
 
   it('has no controls when read-only', () => {
