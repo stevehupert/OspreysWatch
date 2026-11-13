@@ -11,11 +11,14 @@ interface HandProps {
   readonly clickable?: ReadonlySet<string>
   readonly selected?: string
   readonly onCardClick?: (card: string) => void
+  /** Frightening Roar: a click discards the card instead of playing it, so the hand is marked in orange. */
+  readonly discarding?: boolean
 }
 
-export function Hand({ context, state, clickable, selected, onCardClick }: HandProps) {
+export function Hand(props: HandProps) {
+  const { context, state, clickable, selected, onCardClick, discarding } = props
   return (
-    <section className="panel" aria-label="Hand">
+    <section className={`panel hand${discarding ? ' discarding' : ''}`} aria-label="Hand">
       <h2>Hand ({state.deck.hand.length})</h2>
       <div className="cards">
         {state.deck.hand.map((id) => (

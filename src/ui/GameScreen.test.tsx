@@ -104,6 +104,21 @@ describe('GameScreen when playing', () => {
     expect(html.match(/class="card clickable"/g)).toHaveLength(5)
   })
 
+  it('marks the Roar discard in orange: the hand, the controls and the status bar', () => {
+    const html = renderPlayable({ ...start, phase: 'roar' })
+    expect(html).toContain('class="panel hand discarding"')
+    expect(html).toContain('class="panel controls roar"')
+    expect(html).toContain(
+      '<div class="stat roar"><dt>Frightening Roar</dt><dd>Discard a card</dd></div>',
+    )
+  })
+
+  it('has no Roar marks during an ordinary play', () => {
+    const html = renderPlayable(start)
+    expect(html).not.toContain('discarding')
+    expect(html).not.toContain('roar')
+  })
+
   it('shows the end panel, no controls and no clickable cards once the game is over', () => {
     const html = renderPlayable({ ...start, phase: 'over', result: 'defeat-exhausted' })
     expect(html).toContain('aria-label="Game over"')
