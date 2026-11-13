@@ -33,6 +33,8 @@ This is a learning project: the owner reviews every change, so keep changes smal
   and prints win rates (needs Node 22.18 or newer).
 
 Run tests and lint before every commit. Do not commit with failing checks.
+GitHub runs the same checks (format, lint, unit tests, build, browser tests) on every pull request and
+every push to `main`: see `.github/workflows/checks.yml`.
 
 ## Working agreements
 
