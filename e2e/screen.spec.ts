@@ -8,9 +8,12 @@ test('shows a fresh game for the hero and seed in the address', async ({ page })
 })
 
 test('fits the page to the screen width; only the map scrolls sideways', async ({ page }) => {
-  await page.goto('/')
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  )
-  expect(overflow).toBe(0)
+  // The start screen, then a game.
+  for (const address of ['/', '/?hero=warrior&seed=1']) {
+    await page.goto(address)
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )
+    expect(overflow, address).toBe(0)
+  }
 })

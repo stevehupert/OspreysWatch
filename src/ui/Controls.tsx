@@ -27,22 +27,8 @@ interface ControlsProps {
   readonly onCancel: () => void
 }
 
-const resultText = {
-  victory: 'Victory! Every monster is dead and the chest is looted.',
-  'defeat-health': 'Defeat: you ran out of health.',
-  'defeat-exhausted': 'Defeat: you ran out of cards (you could neither play nor rest).',
-} as const
-
 export function Controls(props: ControlsProps) {
   const { context, state, pending } = props
-
-  if (state.result) {
-    return (
-      <section className="panel controls" aria-label="Controls">
-        <p className={`result result-${state.result}`}>{resultText[state.result]}</p>
-      </section>
-    )
-  }
 
   return (
     <section className="panel controls" aria-label="Controls">
