@@ -35,8 +35,8 @@ export function EndPanel({ context, state, result, seed, onReplay, onNewGame }: 
       <dl className="status">
         <Stat label="Ended in round" value={state.round} />
         <Stat label="Health left" value={`${Math.max(state.health, 0)} / ${maxHealth(state)}`} />
-        {/* Rules-spec section 9: a defeat still earns XP (amount undecided) but no loot. */}
-        <Stat label="XP earned" value={won ? rewards.victoryXp : 'Not decided yet'} />
+        {/* Rules-spec section 9: a defeat still earns XP but no loot. */}
+        <Stat label="XP earned" value={won ? rewards.victoryXp : rewards.defeatXp} />
         <Stat label="Loot" value={won ? `${rewards.chestGold} gold` : 'None'} />
         {seed !== undefined && <Stat label="Seed" value={seed} />}
       </dl>

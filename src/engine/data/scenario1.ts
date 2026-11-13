@@ -73,9 +73,10 @@ export const scenario1: ScenarioDefinition = {
     defeat:
       'The crypt is too much for you this time. You stagger back to the surface empty-handed, but wiser for the attempt.',
   },
-  // Rules-spec section 10: victoryXp and chestGold. XP for a defeat is undecided (open question 6).
+  // Rules-spec section 10: victoryXp, defeatXp and chestGold.
   rewards: {
     victoryXp: 2,
+    defeatXp: 1,
     chestGold: 10,
   },
 }

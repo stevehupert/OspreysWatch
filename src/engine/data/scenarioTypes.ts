@@ -48,6 +48,8 @@ export interface ScenarioStory {
 /** Not used by the rules yet: there is no campaign in the MVP, so the end screen only reports these. */
 export interface ScenarioRewards {
   readonly victoryXp: number
+  /** A defeat still earns XP, but no loot. */
+  readonly defeatXp: number
   /** Gold recorded as the chest's loot, earned only on a victory. */
   readonly chestGold: number
 }

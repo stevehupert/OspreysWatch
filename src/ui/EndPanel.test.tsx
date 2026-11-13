@@ -29,12 +29,12 @@ describe('EndPanel', () => {
     expect(html).toContain(`${rewards.chestGold} gold`)
   })
 
-  it('shows a defeat with no loot and the XP still undecided', () => {
+  it('shows a defeat with its smaller XP and no loot', () => {
     for (const result of ['defeat-health', 'defeat-exhausted'] as const) {
       const html = render(result)
       expect(html).toContain('Defeat')
       expect(html).toContain(story.defeat)
-      expect(html).toContain('Not decided yet')
+      expect(html).toContain(`<dd>${rewards.defeatXp}</dd>`)
       expect(html).toContain('<dd>None</dd>')
     }
     expect(render('defeat-health')).toContain('You ran out of health.')
