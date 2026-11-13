@@ -3,6 +3,7 @@
 
 import type { GameContext, GameState } from '../engine/gameState.ts'
 import type { HeroAction } from '../engine/heroActions.ts'
+import { CardView } from './Hand.tsx'
 import { optionLabel, prompts } from './labels.ts'
 import { cardById } from './names.ts'
 import {
@@ -76,14 +77,19 @@ function ChooseRest({ context, actions, onAction, onCancel }: ControlsProps) {
     <>
       <p className="prompt">
         Rest: your discard pile is shuffled back into your draw pile and you draw up to a full hand.
-        Choose one discarded card to lose for the rest of the scenario.
+        Click the discarded card to lose for the rest of the scenario.
       </p>
-      <div className="options">
+      {/* Whole cards, so you can see what each one does before giving it up. */}
+      <div className="cards lose" role="group" aria-label="Cards you can lose">
         {restActions(actions).map((action) => (
-          <button key={action.lose} type="button" onClick={() => onAction(action)}>
-            Lose {cardById(context, action.lose).name}
-          </button>
+          <CardView
+            key={action.lose}
+            card={cardById(context, action.lose)}
+            onClick={() => onAction(action)}
+          />
         ))}
+      </div>
+      <div className="options">
         <CancelButton onCancel={onCancel} />
       </div>
     </>

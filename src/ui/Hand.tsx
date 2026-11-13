@@ -31,12 +31,13 @@ export function Hand({ context, state, clickable, selected, onCardClick }: HandP
   )
 }
 
-function CardView(props: {
+/** One card, both halves. A button when it can be clicked. Also used to pick the card a rest loses. */
+export function CardView(props: {
   readonly card: CardDefinition
-  readonly selected: boolean
+  readonly selected?: boolean
   readonly onClick?: () => void
 }) {
-  const { card, selected, onClick } = props
+  const { card, selected = false, onClick } = props
   const body = (
     <>
       <h3>{card.name}</h3>

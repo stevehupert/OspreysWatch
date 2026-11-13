@@ -569,3 +569,19 @@ button.card:focus-visible {
 .end.result-defeat-exhausted {
   border-color: var(--lose);
 }
+
+/* Resting: the discarded cards you can lose, in the Burn red, because losing a card is permanent. */
+
+.cards.lose {
+  margin-bottom: 8px;
+}
+
+.cards.lose button.card {
+  border-color: var(--burn);
+}
+
+.cards.lose button.card:hover,
+.cards.lose button.card:focus-visible {
+  border-color: var(--burn);
+  box-shadow: 0 0 0 3px var(--burn);
+}

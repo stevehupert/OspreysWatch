@@ -31,7 +31,8 @@ test('will not start with a seed that is not a whole number', async ({ page }) =
 })
 
 // Plays without thinking until the game ends: rest whenever allowed, otherwise the first card and
-// its first option, the first highlighted space or monster, and "Play anyway" when asked.
+// its first option, the first highlighted space or monster, "Play anyway" when asked, and the
+// first card offered when a rest loses one.
 async function playToTheEnd(page: Page) {
   const gameOver = page.getByLabel('Game over')
   const controls = page.getByLabel('Controls')
@@ -40,6 +41,11 @@ async function playToTheEnd(page: Page) {
     const onMap = page.locator('.board button.selectable')
     if ((await onMap.count()) > 0) {
       await onMap.first().click()
+      continue
+    }
+    const losable = controls.getByRole('group', { name: 'Cards you can lose' }).getByRole('button')
+    if ((await losable.count()) > 0) {
+      await losable.first().click()
       continue
     }
     const choices = controls.locator('.options button:not(.cancel)')

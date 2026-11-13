@@ -88,3 +88,26 @@ test('the log explains your play and the monster phase that follows', async ({ p
   const name = flipped?.match(/^Enemy card: (.+?)[.!] /)?.[1] ?? ''
   await expect(page.getByLabel('Status')).toContainText(name)
 })
+
+test('a rest shows the discarded cards whole; clicking one loses it', async ({ page }) => {
+  // Play cards (first option, first highlighted space or monster) until a rest is allowed.
+  const rest = controls(page).getByRole('button', { name: 'Rest' })
+  for (let step = 0; step < 60 && !(await rest.isVisible()); step++) {
+    const onMap = page.locator('.board button.selectable')
+    const choices = controls(page).locator('.options button:not(.cancel)')
+    if ((await onMap.count()) > 0) await onMap.first().click()
+    else if ((await choices.count()) > 0) await choices.first().click()
+    else await page.getByLabel('Hand').getByRole('button').first().click()
+  }
+  await rest.click()
+
+  const losable = controls(page).getByRole('group', { name: 'Cards you can lose' })
+  const cards = losable.getByRole('button')
+  expect(await cards.count()).toBeGreaterThanOrEqual(2)
+  // Each card shows both halves, not just its name.
+  await expect(cards.first().locator('.half-label')).toHaveText(['A', 'B'])
+  const name = (await cards.first().locator('h3').textContent())!
+
+  await cards.first().click()
+  await expect(pile(page).locator('.pile', { hasText: 'Lost' })).toContainText(name)
+})
