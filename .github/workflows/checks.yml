@@ -1,13 +1,10 @@
-# Runs the same checks CLAUDE.md asks for before every commit, on every pull request and on
-# every push to main (so main is checked again after a merge). Results show as a tick or a cross
-# on the PR; merging is not blocked.
+# Runs the same checks CLAUDE.md asks for before every commit, on every pull request. Main is not
+# checked again after a merge. Results show as a tick or a cross on the PR; merging is not blocked.
 
 name: Checks
 
 on:
   pull_request:
-  push:
-    branches: [main]
 
 # A newer push to the same PR cancels the run still going for the older one.
 concurrency:
