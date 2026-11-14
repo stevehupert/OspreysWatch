@@ -1,6 +1,8 @@
 # Rules Spec: Solo Tutorial Scenario (MVP)
 
-Status: draft v0.10, 2026-11-12. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+Status: draft v0.11, 2026-11-13. Source: the design conversations and the playtest simulator. Anything marked **Assumption** was inferred while writing and needs confirmation. Tuning values may still change after more testing.
+
+Changes in v0.11: the ten card halves that were "Move 2" (the same as the move any card can make) are now "Move 3"; both heroes' bot win rates re-measured (section 11, item 11). The reference games still replay unchanged (section 12).
 
 Changes in v0.10: draft story text for the start and end screens (section 9); a defeat earns 1 XP (defeatXp, open question 6 resolved); victoryXp, defeatXp and chestGold are in the scenario data (`rewards` in `src/engine/data/scenario1.ts`).
 
@@ -63,15 +65,15 @@ Every card can instead be played as Move 2, Attack 1 (melee), Loot, or Interact.
 
 | #   | Card          | Half A                                             | Burn A? | Half B   |
 | --- | ------------- | -------------------------------------------------- | ------- | -------- |
-| 1   | Cleave        | Attack 2, plus 1 damage to a second adjacent enemy | No      | Move 2   |
+| 1   | Cleave        | Attack 2, plus 1 damage to a second adjacent enemy | No      | Move 3   |
 | 2   | Quick Strike  | Attack 3                                           | No      | Move 3   |
-| 3   | Sweep         | Attack 2 to ALL adjacent enemies                   | No      | Move 2   |
+| 3   | Sweep         | Attack 2 to ALL adjacent enemies                   | No      | Move 3   |
 | 4   | Shield Bash   | Attack 2, Push 1                                   | No      | Shield 2 |
 | 5   | Hold the Line | Shield 2 and Heal 1                                | No      | Attack 2 |
-| 6   | Guard Stance  | Shield 1 and Attack 2                              | No      | Move 2   |
-| 7   | Second Wind   | Heal 3                                             | No      | Move 2   |
+| 6   | Guard Stance  | Shield 1 and Attack 2                              | No      | Move 3   |
+| 7   | Second Wind   | Heal 3                                             | No      | Move 3   |
 | 8   | Charge        | Move 3, then Attack 2                              | No      | Move 3   |
-| 9   | Heavy Blow    | Attack 5                                           | Yes     | Move 2   |
+| 9   | Heavy Blow    | Attack 5                                           | Yes     | Move 3   |
 | 10  | Last Stand    | Heal 3 and Shield 2                                | Yes     | Attack 2 |
 
 ### Mage deck
@@ -80,14 +82,14 @@ Every card can instead be played as Move 2, Attack 1 (melee), Loot, or Interact.
 | --- | ------------- | --------------------------------------------------------------------------- | ------- | ----------------- |
 | 1   | Spark         | Attack 3, Range 3                                                           | No      | Move 3            |
 | 2   | Arcane Bolt   | Attack 5, Range 2                                                           | Yes     | Shield 2          |
-| 3   | Fireball      | Attack 3, Range 3, plus 1 damage to each other enemy adjacent to the target | No      | Move 2            |
-| 4   | Frost Snare   | Attack 1, Range 3, Freeze the target                                        | No      | Move 2            |
+| 3   | Fireball      | Attack 3, Range 3, plus 1 damage to each other enemy adjacent to the target | No      | Move 3            |
+| 4   | Frost Snare   | Attack 1, Range 3, Freeze the target                                        | No      | Move 3            |
 | 5   | Force Push    | Push 2 (enemy within 3), then Attack 1 (same target)                        | No      | Shield 2          |
 | 6   | Ward          | Shield 2                                                                    | No      | Attack 2, Range 2 |
-| 7   | Mend          | Heal 2                                                                      | No      | Move 2            |
-| 8   | Meteor        | Attack 3 to the target and to all enemies adjacent to it, Range 4           | Yes     | Move 2            |
+| 7   | Mend          | Heal 2                                                                      | No      | Move 3            |
+| 8   | Meteor        | Attack 3 to the target and to all enemies adjacent to it, Range 4           | Yes     | Move 3            |
 | 9   | Arcane Recall | Return 2 cards from your discard to your hand                               | Yes     | Attack 1, Range 3 |
-| 10  | Barrier       | Shield 3                                                                    | Yes     | Move 2            |
+| 10  | Barrier       | Shield 3                                                                    | Yes     | Move 3            |
 
 In the solo game, wording that targeted "a hero" or "all heroes" applies to you.
 
@@ -261,7 +263,7 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 ## 11. Open questions and tuning status
 
 1. **Goblin strength.** Resolved: goblin Attack is 2.
-2. **Mage durability and base shield.** Resolved for now: the Mage has 7 health and base shield 0, with four shield-capable cards. Before v0.9 the bot results in item 11 showed her as the easier hero; since the v0.9 Charge change the Warrior is slightly ahead.
+2. **Mage durability and base shield.** Resolved for now: the Mage has 7 health and base shield 0, with four shield-capable cards. Before v0.9 the bot results in item 11 showed her as the easier hero; since the v0.9 Charge change the Warrior is ahead (about 8 points after the v0.11 Move 3 change).
 3. **Base shield as floor.** Resolved: confirmed.
 4. **Rest in both slots.** Undecided. Default is one rest per round.
 5. **Enemy deck.** Resolved: 15 cards for Scenario 1.
@@ -306,6 +308,20 @@ These live in `src/engine/data/` and must not be hard-coded in logic.
 
       The Mage is unchanged (56.7% by step, 54.1% by interact), so the Warrior is now about 5 to 8 points ahead instead of about 20 behind.
 
+    - **Move 2 halves to Move 3 (v0.11).** Ten B halves (Warrior: Cleave, Sweep, Guard Stance, Second Wind, Heavy Blow; Mage: Fireball, Frost Snare, Mend, Meteor, Barrier) were "Move 2", which any card can already do, so they were wasted. Two fixes were measured on the same 1000 seeds (door by step):
+
+      |                                         | Hero    | Wins                      | Lost to health | Lost to exhaustion | Avg round of a win |
+      | --------------------------------------- | ------- | ------------------------- | -------------- | ------------------ | ------------------ |
+      | Before (v0.10)                          | Warrior | 62.0% (plus or minus 3.0) | 15.8%          | 22.2%              | 14.5               |
+      | Before (v0.10)                          | Mage    | 56.7% (plus or minus 3.1) | 24.9%          | 18.4%              | 17.3               |
+      | Move 3 (chosen)                         | Warrior | 70.8% (plus or minus 2.8) | 13.1%          | 16.1%              | 13.4               |
+      | Move 3 (chosen)                         | Mage    | 62.6% (plus or minus 3.0) | 27.1%          | 10.3%              | 16.5               |
+      | Move 2 plus an extra                    | Warrior | 80.6% (plus or minus 2.5) | 7.5%           | 11.9%              | 13.8               |
+      | Move 2 plus an extra                    | Mage    | 43.6% (plus or minus 3.1) | 22.2%          | 34.2%              | 16.8               |
+      | Move 2 plus an extra, no Shield on Mage | Mage    | 54.6% (plus or minus 3.1) | 22.9%          | 22.5%              | 17.1               |
+
+      The extras were Move 2, Attack 1 (melee) on Cleave, Sweep and Heavy Blow; Move 2, Heal 1 on Guard Stance, Second Wind and Mend; Move 2, Shield 1 on Fireball, Frost Snare, Meteor and Barrier. Shield 1 hurt the Mage: a shield card stays showing until the next monster phase instead of going to the discard pile, so her rests came later and exhaustion nearly doubled. (A Shield 1 extra would do nothing for the Warrior, whose base shield 1 is a floor.) Move 3 was chosen: both heroes gain 6 to 9 points, mostly from fewer exhaustion losses, and the gap stays about 8 points. To measure the extras fairly, the bot was given the free Move 2 for cards whose only move half also attacks or heals; that change is not needed with Move 3, because every move half is a plain move.
+
     - **Unknown bot limits.** It plans one play at a time, does not plan its rests, and was tuned on seeds 1 to 40, then tested on different seeds. The TypeScript bot counts the enemy cards left in the draw pile (it does not know their order).
     - Lava remains the key lever against the Ogre: two pushes remove 4 of its 10 health, ignoring armor. The Ogre can walk out of the lava on its next move.
 12. **Mage balance options.** Tested with the solver on the same deals: Ogre Roar range 3 instead of 2 left the Mage's damage taken unchanged (2.75 versus 2.75 per game over 8 deals) and raised the Warrior's slightly (8.5 versus 7.6). Force Push range 2 plus Meteor range 3 also changed nothing (3.0 versus 2.9 over 9 deals). Range alone is not the lever. Done so far: Mage health 8 to 7 (about 4 points of win rate), Mend 3 to 2 (about 5 points) and Arcane Bolt as a burn card (about 12 points); see item 11. Untested: Ogre health 10 to 12; Ogre move 2 to 3.
@@ -323,6 +339,7 @@ Two full games found by the simulator, recorded so the engine can reproduce them
 - The deal order lists the 10 cards: the first 5 are the starting hand, the other 5 are the draw pile top-to-bottom.
 - Enemy flips are taken in the order listed, one per monster phase that actually happens.
 - When the draw pile runs out and a rest happens, the shuffle result is given explicitly (the simulator's shuffle cannot be reproduced in TypeScript).
+- Both games were recorded when ten cards had "Move 2" as their B half (before v0.11). They replay unchanged with Move 3, because Move 3 means moving up to 3 spaces.
 - The enemy deck order is given for the first 15 flips. After the first Unleash Doom the engine reshuffles the whole deck (section 7), but the games were recorded without that reshuffle, so the tests script the order of the remaining flips (`enemyShuffles` in `src/engine/fixtures/`). The flips shown in the tables below are the ones actually used.
 - Coordinates: "A R3C4" means Tile A row 3 column 4; "Door" is the door space.
 - "Played as Move 2" means a card's generic action, not its printed half.

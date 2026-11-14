@@ -11,7 +11,7 @@ export const warriorDeck: readonly CardDefinition[] = [
       burn: false,
       effects: [{ kind: 'attack', damage: 2, range: 1, also: { to: 'secondAdjacent', damage: 1 } }],
     },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'warrior-quick-strike',
@@ -27,7 +27,7 @@ export const warriorDeck: readonly CardDefinition[] = [
       burn: false,
       effects: [{ kind: 'attack', damage: 2, range: 1, area: 'allAdjacent' }],
     },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'warrior-shield-bash',
@@ -68,13 +68,13 @@ export const warriorDeck: readonly CardDefinition[] = [
         { kind: 'attack', damage: 2, range: 1 },
       ],
     },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'warrior-second-wind',
     name: 'Second Wind',
     halfA: { text: 'Heal 3', burn: false, effects: [{ kind: 'heal', amount: 3 }] },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'warrior-charge',
@@ -93,7 +93,7 @@ export const warriorDeck: readonly CardDefinition[] = [
     id: 'warrior-heavy-blow',
     name: 'Heavy Blow',
     halfA: { text: 'Attack 5', burn: true, effects: [{ kind: 'attack', damage: 5, range: 1 }] },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'warrior-last-stand',
