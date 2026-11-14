@@ -33,7 +33,7 @@ export const mageDeck: readonly CardDefinition[] = [
         { kind: 'attack', damage: 3, range: 3, also: { to: 'adjacentToTarget', damage: 1 } },
       ],
     },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'mage-frost-snare',
@@ -43,7 +43,7 @@ export const mageDeck: readonly CardDefinition[] = [
       burn: false,
       effects: [{ kind: 'attack', damage: 1, range: 3, freeze: true }],
     },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'mage-force-push',
@@ -72,7 +72,7 @@ export const mageDeck: readonly CardDefinition[] = [
     id: 'mage-mend',
     name: 'Mend',
     halfA: { text: 'Heal 2', burn: false, effects: [{ kind: 'heal', amount: 2 }] },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'mage-meteor',
@@ -84,7 +84,7 @@ export const mageDeck: readonly CardDefinition[] = [
         { kind: 'attack', damage: 3, range: 4, also: { to: 'adjacentToTarget', damage: 3 } },
       ],
     },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
   {
     id: 'mage-arcane-recall',
@@ -104,6 +104,6 @@ export const mageDeck: readonly CardDefinition[] = [
     id: 'mage-barrier',
     name: 'Barrier',
     halfA: { text: 'Shield 3', burn: true, shield: 3, effects: [{ kind: 'shield', value: 3 }] },
-    halfB: { text: 'Move 2', burn: false, effects: [{ kind: 'move', distance: 2 }] },
+    halfB: { text: 'Move 3', burn: false, effects: [{ kind: 'move', distance: 3 }] },
   },
 ]
