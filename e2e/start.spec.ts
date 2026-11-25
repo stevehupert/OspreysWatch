@@ -23,6 +23,20 @@ test('starts the chosen hero with the chosen seed, and puts them in the address'
   expect(await handNames(page)).toEqual(mageSeed7)
 })
 
+test('opens How to play and comes back with the hero and seed still chosen', async ({ page }) => {
+  await page.goto('/')
+  await page.getByLabel('Mage').check()
+  await page.getByLabel('Seed').fill('42')
+
+  await page.getByRole('button', { name: 'How to play' }).click()
+  await expect(page.getByRole('heading', { name: 'How to play' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'A round' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page.getByLabel('Mage')).toBeChecked()
+  await expect(page.getByLabel('Seed')).toHaveValue('42')
+})
+
 test('will not start with a seed that is not a whole number', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('Seed').fill('1.5')
