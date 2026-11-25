@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react'
 import { heroStats, type HeroId } from '../engine/data/heroes.ts'
 import type { GameContext } from '../engine/gameState.ts'
 import { heroNames } from './names.ts'
+import { OverviewScreen } from './OverviewScreen.tsx'
 import { parseSeed, type GameSetup } from './setup.ts'
 
 interface StartScreenProps {
@@ -23,11 +24,17 @@ const heroIds = Object.keys(heroStats) as HeroId[]
 export function StartScreen({ context, seed, onStart }: StartScreenProps) {
   const [hero, setHero] = useState<HeroId>('warrior')
   const [seedText, setSeedText] = useState(String(seed))
+  // Kept here rather than in App, so the hero and seed chosen so far survive a look at the overview.
+  const [showOverview, setShowOverview] = useState(false)
   const parsedSeed = parseSeed(seedText)
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
     if (parsedSeed !== null) onStart({ hero, seed: parsedSeed })
+  }
+
+  if (showOverview) {
+    return <OverviewScreen context={context} onBack={() => setShowOverview(false)} />
   }
 
   return (
@@ -73,6 +80,9 @@ export function StartScreen({ context, seed, onStart }: StartScreenProps) {
         <div className="options">
           <button type="submit" className="primary" disabled={parsedSeed === null}>
             Start game
+          </button>
+          <button type="button" onClick={() => setShowOverview(true)}>
+            How to play
           </button>
         </div>
       </form>
